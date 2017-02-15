@@ -1,0 +1,2 @@
+an alternative shells for Windows. with custom graphic build on swing using purely Java. 
+currently version includes the following basic functionalities: different type of dynamic background, a simple file browser, infinity note board, password manager. ( more functionality will be added in the future. )
