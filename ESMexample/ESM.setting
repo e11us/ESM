@@ -7,7 +7,7 @@
 //
 /// 0-500 are path setting for ESM ============================================================
 //
-0 String D:/_ESM/ellus.ESM/ESM                                         // path for master folder.
+0 String ./ESM                                         // path for master folder.
 //
 1 String /pinned                                                       // path for pinned folder in the master folder.
 2 String /sys                                                          // system folder.
