@@ -132,7 +132,7 @@ public class PasswordManager extends ESMPanel implements AbleSMXConfig{
 				@Override
 				public void B1clickAction( int x, int y ) {
 					password pwI= new password();
-					pwI.get( folder, helper.getFileName( helper.getFilePathName( path ) ), "master1" );
+					pwI.get( folder, helper.getFileName( helper.getFilePathName( path ) ), "--" );
 					//
 					//
 					switch( curAction ){

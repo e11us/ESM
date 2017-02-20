@@ -124,9 +124,9 @@ public class mySQLportal {
 		try{
 			Class.forName( "com.mysql.jdbc.Driver" );
 			//
-			String userName= "root";
-			String password= "nvkD93Ix03Lzib43sQ"; //"nvkD93sfeIx03K34URLzib43sQ";
-			String url= "jdbc:mysql://localhost:3306/esmsql";
+			String userName= "user";
+			String password= "passowrd";
+			String url= "localhost ?? "
 			//
 			con= DriverManager.getConnection( url, userName, password );
 			display.println( "data.mySQLportal", "connection established successfully." );
