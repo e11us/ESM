@@ -4,8 +4,6 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import javax.swing.BorderFactory;
-import javax.swing.border.TitledBorder;
 import ellus.ESM.ESMW.ESMPL;
 import ellus.ESM.ESMW.ESMPanel;
 import ellus.ESM.Machine.helper;
@@ -13,7 +11,7 @@ import ellus.ESM.pinnable.pinnable;
 import ellus.ESM.pinnable.Button.ButtonTextFS;
 import ellus.ESM.pinnable.SS.PanelBackgroundSC;
 import ellus.ESM.pinnable.SS.PanelBackgroundTitleFS1;
-import ellus.ESM.pinnable.panel.PanelContainer;
+import ellus.ESM.pinnable.panel.PanelContainerScroll;
 import ellus.ESM.roboSys.DeskTop;
 import ellus.ESM.setting.SMan;
 import ellus.ESM.setting.SManXAttr.AttrType;
@@ -24,15 +22,15 @@ import ellus.ESM.setting.SManXElm;
 public class FileSys extends ESMPanel {
 	private String		curDir		= SMan.getSetting( 500 );
 	private SManXElm	folderConfig= null;
-	
+
 	/*||----------------------------------------------------------------------------------------------
 	 ||| constructor of class
 	||||--------------------------------------------------------------------------------------------*/
 	public FileSys( SManXElm config ) {
 		super( config );
 		//
-		super.titlePin= new PanelBackgroundTitleFS1( 
-				config.getElm( "PanelBackgroundTitleFS1", "Title&Border"), PS, "FileSystem" );
+		super.titlePin= new PanelBackgroundTitleFS1(
+				config.getElm( "PanelBackgroundTitleFS1", "Title&Border" ), PS, "FileSystem" );
 		super.bgPL.add( 2, titlePin );
 		super.bgPL.add( 0, new PanelBackgroundSC( config.getElm( "PanelBackgroundSC", "P_HomeBackgroundColor" ), PS ) );
 		//
@@ -40,7 +38,6 @@ public class FileSys extends ESMPanel {
 		constructFolder();
 	}
 
-	
 	@Override
 	protected synchronized void CheckB3ClickNGE( MouseEvent e ) {
 		if( curDir.equals( "###ListRoot###" ) ){
@@ -134,7 +131,7 @@ public class FileSys extends ESMPanel {
 			}
 		}
 		//
-		PanelContainer ffg= new PanelContainer( config.getElm( "PanelContainer", "FFItemGroup" ),
+		PanelContainerScroll ffg= new PanelContainerScroll( config.getElm( "PanelContainer", "FFItemGroup" ),
 				xS + config.getAttr( AttrType._location, "FFItemGroup" ).getLocation().getX(),
 				yS + config.getAttr( AttrType._location, "FFItemGroup" ).getLocation().getY(), ff );
 		pl.add( 4, ffg );

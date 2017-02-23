@@ -3,10 +3,10 @@ package ellus.ESM.data;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Scanner;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
-import com.google.common.io.Files;
 import ellus.ESM.Machine.display;
 import ellus.ESM.Machine.helper;
 import ellus.ESM.setting.SCon;
@@ -30,8 +30,8 @@ public class NoteImg {
 		para[3]= helper.getImage( filePath );
 		// dup file.
 		try{
-			Files.copy( new File( filePath ), new File( folder + "/" + id + " " + x
-					+ " " + y + " " + SCon.ExtpinImg ) );
+			Files.copy( new File( filePath ).toPath(), new File( folder + "/" + id + " " + x
+					+ " " + y + " " + SCon.ExtpinImg ).toPath() );
 		}catch ( IOException e ){
 			e.printStackTrace();
 			display.printErr( this.getClass().toGenericString(), "error copy file" );

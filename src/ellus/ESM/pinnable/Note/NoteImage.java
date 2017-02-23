@@ -9,10 +9,10 @@ import ellus.ESM.Machine.display;
 import ellus.ESM.data.NoteImg;
 import ellus.ESM.pinnable.pin;
 import ellus.ESM.pinnable.pinnable;
-import ellus.ESM.pinnable.able_Interface.AbleClickHighlight;
-import ellus.ESM.pinnable.able_Interface.AbleKeyboardFunInp;
-import ellus.ESM.pinnable.able_Interface.AbleLocalLink;
-import ellus.ESM.pinnable.able_Interface.AbleMouseDrag;
+import ellus.ESM.pinnable.Able.AbleClickHighlight;
+import ellus.ESM.pinnable.Able.AbleKeyboardFunInp;
+import ellus.ESM.pinnable.Able.AbleLocalLink;
+import ellus.ESM.pinnable.Able.AbleMouseDrag;
 
 
 

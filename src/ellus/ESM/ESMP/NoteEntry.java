@@ -1,80 +1,55 @@
 package ellus.ESM.ESMP;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Timer;
-import javax.swing.BorderFactory;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.border.Border;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.TitledBorder;
 import ellus.ESM.ESMW.ESMPL;
 import ellus.ESM.ESMW.ESMPanel;
 import ellus.ESM.ESMW.ESMW_SMXConfig;
-import ellus.ESM.Machine.f;
 import ellus.ESM.Machine.helper;
 import ellus.ESM.data.SQL.mySQLportal;
-import ellus.ESM.data.crypto.password;
-import ellus.ESM.pinnable.pinnable;
 import ellus.ESM.pinnable.Button.ButtonScrollWT;
 import ellus.ESM.pinnable.Button.ButtonTextFS;
-import ellus.ESM.pinnable.SS.PanelBackgroundMatx;
-import ellus.ESM.pinnable.SS.PanelBackgroundPicSuff;
 import ellus.ESM.pinnable.SS.PanelBackgroundSC;
 import ellus.ESM.pinnable.SS.PanelBackgroundTitleFS1;
-import ellus.ESM.pinnable.panel.PanelContainer;
-import ellus.ESM.pinnable.panel.PanelMultiLineInput;
 import ellus.ESM.pinnable.panel.PanelTextFieldPin;
-import ellus.ESM.pinnable.panel.PanelTextRead;
-import ellus.ESM.roboSys.DeskTop;
-import ellus.ESM.roboSys.keyboard;
-import ellus.ESM.setting.SCon;
-import ellus.ESM.setting.SMan;
-import ellus.ESM.setting.SManXElm;
 import ellus.ESM.setting.SManXAttr.AttrType;
+import ellus.ESM.setting.SManXElm;
+
+
 
 public class NoteEntry extends ESMPanel {
-	private NoteEntry handler = this;
-	private SManXElm		logWindow= null;
-	private ButtonTextFS sizC= null;
-	private PanelTextFieldPin txp= null;
-	private ButtonScrollWT	pgs			= null;
-	private ButtonTextFS	newPS		= null;
-	private int				curEntry	= 0;
-	private final static String[] entries= { "keyword", "content", "webLink", "comment", "situation",
+	private NoteEntry				handler		= this;
+	private SManXElm				logWindow	= null;
+	private ButtonTextFS			sizC		= null;
+	private PanelTextFieldPin		txp			= null;
+	private ButtonScrollWT			pgs			= null;
+	private ButtonTextFS			newPS		= null;
+	private int						curEntry	= 0;
+	private final static String[]	entries		= { "keyword", "content", "webLink", "comment", "situation",
 			"locLink", "endDate", "urgency", "importancy" };
-	private final static String[] entriesSize= { "1000", "25000", "2083", "25000", "5000",
+	private final static String[]	entriesSize	= { "1000", "25000", "2083", "25000", "5000",
 			"2083", "20", "1", "1" };
-	private int orgW, orgH, expW, expH;
-	private boolean expanded= false;
-	
-	private ArrayList<String> entryCont= new ArrayList<>();
-					
+	private int						orgW, orgH, expW, expH;
+	private boolean					expanded	= false;
+	private ArrayList <String>		entryCont	= new ArrayList <>();
 	// only allow one instance.
-	private static NoteEntry ne= null;
-	
+	private static NoteEntry		ne			= null;
+
 	// get the instance.
-	public static NoteEntry getInstance(  SManXElm config  ) {
+	public static NoteEntry getInstance( SManXElm config ) {
 		if( ne != null )
 			return null;
 		ne= new NoteEntry( config );
 		return ne;
 	}
-	
+
 	// close and reset.
-	public static void close(){
+	public static void close() {
 		if( ne != null )
 			ne.closePanel();
 	}
-	
-	NoteEntry( SManXElm config ) {		
+
+	NoteEntry( SManXElm config ) {
 		super( config );
 		this.masterSE= config;
 		this.logWindow= config.getElm( "ESMPL", "LoggerWindow" );
@@ -83,17 +58,17 @@ public class NoteEntry extends ESMPanel {
 		expW= config.getAttr( AttrType._int, "WindowExpandedWidth" ).getInteger();
 		expH= config.getAttr( AttrType._int, "WindowExpandedHeight" ).getInteger();
 		//
-		for( int i= 0; i < entries.length; i++ ) {
+		for( int i= 0; i < entries.length; i++ ){
 			entryCont.add( "   " );
 		}
 		constructWindow();
 	}
-	
+
 	private void constructWindow() {
 		super.bgPL= new ESMPL();
 		super.bgPL.add( 1, new PanelBackgroundSC( masterSE.getElm( "PanelBackgroundSC", "BackgroundColor" ), PS ) );
-		super.titlePin= new PanelBackgroundTitleFS1( 
-				masterSE.getElm( "PanelBackgroundTitleFS1", "Title&Border"), PS, "NoteEntry" );
+		super.titlePin= new PanelBackgroundTitleFS1(
+				masterSE.getElm( "PanelBackgroundTitleFS1", "Title&Border" ), PS, "NoteEntry" );
 		super.bgPL.add( 2, titlePin );
 		//
 		super.Subpls.removeAll( Subpls );
@@ -112,18 +87,19 @@ public class NoteEntry extends ESMPanel {
 				@Override
 				public void WheelRotateAction( int rot ) {
 					entryCont.remove( curEntry );
-					entryCont.add(  curEntry, txp.getTxt() );
+					entryCont.add( curEntry, txp.getTxt() );
 					//
 					super.WheelRotateAction( rot );
 					curEntry+= rot;
 					if( curEntry < 0 )
 						curEntry= 0;
 					else if( curEntry > entries.length - 1 )
-						curEntry = entries.length - 1;
-					this.setMsg( entries[curEntry]+ " - size:" + entriesSize[curEntry] );
+						curEntry= entries.length - 1;
+					this.setMsg( entries[curEntry] + " - size:" + entriesSize[curEntry] );
 					//
-					txp.setText( entryCont.get( curEntry  ) );
+					txp.setText( entryCont.get( curEntry ) );
 				}
+
 				@Override
 				public void B1clickAction( int x, int y ) {
 					//
@@ -139,7 +115,7 @@ public class NoteEntry extends ESMPanel {
 				public void B1clickAction( int x, int y ) {
 					//
 					entryCont.remove( curEntry );
-					entryCont.add(  curEntry, txp.getTxt() );
+					entryCont.add( curEntry, txp.getTxt() );
 					//
 					sendQuery();
 				}
@@ -160,8 +136,8 @@ public class NoteEntry extends ESMPanel {
 				"Erase All" ) {
 			@Override
 			public void B1clickAction( int x, int y ) {
-				entryCont= new ArrayList<>();
-				for( int i= 0; i < entries.length; i++ ) {
+				entryCont= new ArrayList <>();
+				for( int i= 0; i < entries.length; i++ ){
 					entryCont.add( "   " );
 				}
 				curEntry= 0;
@@ -171,26 +147,26 @@ public class NoteEntry extends ESMPanel {
 		};
 		pl.add( 4, easeA );
 		//
-		if( sizC == null ) {
+		if( sizC == null ){
 			sizC= new ButtonTextFS( config.getElm( "ButtonTextFS", "SizeChange" ),
 					"Expand" ) {
 				@Override
 				public void B1clickAction( int x, int y ) {
-					if( !expanded ) {
+					if( !expanded ){
 						handler.resize( expW, expH );
-						PS.changeViewCenterP( 0, - (expH - orgH ) / 2 );
-						expanded= true;	
+						PS.changeViewCenterP( 0, - ( expH - orgH ) / 2 );
+						expanded= true;
 						sizC.setMsg( "Collapse" );
 						//
-						int dif= (expH - orgH );
+						int dif= ( expH - orgH );
 						txp.setXY( txp.getXmin(), txp.getXmax(), txp.getYmin() - dif, txp.getYmax() );
-					}else {
+					}else{
 						handler.resize( orgW, orgH );
-						PS.changeViewCenterP( 0,  (expH - orgH ) / 2 );
+						PS.changeViewCenterP( 0, ( expH - orgH ) / 2 );
 						expanded= false;
 						sizC.setMsg( "Expand" );
 						//
-						int dif= (expH - orgH );
+						int dif= ( expH - orgH );
 						txp.setXY( txp.getXmin(), txp.getXmax(), txp.getYmin() + dif, txp.getYmax() );
 					}
 				}
@@ -198,34 +174,34 @@ public class NoteEntry extends ESMPanel {
 		}
 		pl.add( 4, sizC );
 		//
-		if( txp == null ) {
-			txp= new PanelTextFieldPin( config.getElm( "PanelTextFieldPin", "EntryContentEdit" ), 
+		if( txp == null ){
+			txp= new PanelTextFieldPin( config.getElm( "PanelTextFieldPin", "EntryContentEdit" ),
 					helper.str2ALstr( entryCont.get( curEntry ) ) ) {
 				@Override
 				public void B3clickAction( int x, int y ) {
 					closePanel();
 				}
-			};	
+			};
 		}
 		pl.add( 4, txp );
 		highlighted= txp;
 		//
 		return pl;
 	}
-	
+
 	private void signalGoodInsert() {
-		newPS.setFeedBack( "Good Insert", Color.green, 1800 );	
+		newPS.setFeedBack( "Good Insert", Color.green, 1800 );
 	}
-	
+
 	private void signalBadInsert() {
 		newPS.setFeedBack( "Bad Insert", Color.red, 1900 );
 	}
-	
+
 	private void sendQuery() {
-		ArrayList<String> name = new ArrayList<>();
-		ArrayList<String> cont = new ArrayList<>();
+		ArrayList <String> name= new ArrayList <>();
+		ArrayList <String> cont= new ArrayList <>();
 		boolean empty= true;
-		for( int i= 0; i< entries.length; i++ ) {
+		for( int i= 0; i < entries.length; i++ ){
 			name.add( entries[i] );
 			cont.add( entryCont.get( i ) );
 			if( helper.containsAlphNum( entryCont.get( i ) ) )
@@ -233,32 +209,30 @@ public class NoteEntry extends ESMPanel {
 		}
 		name.add( "functional" );
 		cont.add( "NoteEntry" );
-		if( !empty ) {
+		if( !empty ){
 			if( mySQLportal.insert( name, cont ) )
 				signalGoodInsert();
-			else
-				signalBadInsert();
-		} else
-			signalBadInsert();
+			else signalBadInsert();
+		}else signalBadInsert();
 		//
-		entryCont= new ArrayList<>();
-		for( int i= 0; i < entries.length; i++ ) {
+		entryCont= new ArrayList <>();
+		for( int i= 0; i < entries.length; i++ ){
 			entryCont.add( "   " );
 		}
 		curEntry= 0;
-		txp.setText( entryCont.get( 0  ) );
+		txp.setText( entryCont.get( 0 ) );
 		pgs.setInde( 0 );
 	}
-	
+
 	@Override
 	protected void closePanel() {
-		if( expanded ) {
+		if( expanded ){
 			handler.resize( orgW, orgH );
 		}
 		ne= null;
 		super.closePanel();
 	}
-	
+
 	@Override
 	protected synchronized void KeyboardInpNGE( String lk ) {
 		//
@@ -274,29 +248,28 @@ public class NoteEntry extends ESMPanel {
 		}
 	}
 }
-
 //
-		/*
-		private JTextArea txtPan; 
-		**
-		SManXElm		inptWdw= logWindow.getElm( "ButtonInputMultiLine", "EntryContentEdit" );
-		txtPan= new JTextArea( );
-		txtPan.setBackground( inptWdw.getAttr( AttrType._color, "BackgroundColor1" ).getColor() );
-		txtPan.setForeground( inptWdw.getAttr( AttrType._color, "TextColor" ).getColor() ); 
-		txtPan.setLineWrap(true);
-		txtPan.setWrapStyleWord(true);
-		Border  raisedetched = BorderFactory.createEtchedBorder(EtchedBorder.RAISED);
-		txtPan.setBorder( raisedetched );
-		txtPan.setFont(  
-				SCon.FontList.get( inptWdw.getAttr( AttrType._int, "FontIndex" ).getInteger() )
-				.deriveFont( (float)inptWdw.getAttr( AttrType._int, "FontSize" ).getInteger() ) );
-		//
-		JScrollPane sp = new JScrollPane( txtPan );
-		sp.setVerticalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-		sp.setBackground( Color.black );
-		int spx= logWindow.getAttr( AttrType._location, "TextInputWindow" ).getLocation().getX();
-		int spy= logWindow.getAttr( AttrType._location, "TextInputWindow" ).getLocation().getY();
-		sp.setBounds( spx, spy, PS.getWidth() - spx*2, PS.getHeight() - 250 );
-		super.setLayout( null );
-     super.add( sp );
-     */
+/*
+private JTextArea txtPan;
+**
+SManXElm		inptWdw= logWindow.getElm( "ButtonInputMultiLine", "EntryContentEdit" );
+txtPan= new JTextArea( );
+txtPan.setBackground( inptWdw.getAttr( AttrType._color, "BackgroundColor1" ).getColor() );
+txtPan.setForeground( inptWdw.getAttr( AttrType._color, "TextColor" ).getColor() );
+txtPan.setLineWrap(true);
+txtPan.setWrapStyleWord(true);
+Border  raisedetched = BorderFactory.createEtchedBorder(EtchedBorder.RAISED);
+txtPan.setBorder( raisedetched );
+txtPan.setFont(
+		SCon.FontList.get( inptWdw.getAttr( AttrType._int, "FontIndex" ).getInteger() )
+		.deriveFont( (float)inptWdw.getAttr( AttrType._int, "FontSize" ).getInteger() ) );
+//
+JScrollPane sp = new JScrollPane( txtPan );
+sp.setVerticalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+sp.setBackground( Color.black );
+int spx= logWindow.getAttr( AttrType._location, "TextInputWindow" ).getLocation().getX();
+int spy= logWindow.getAttr( AttrType._location, "TextInputWindow" ).getLocation().getY();
+sp.setBounds( spx, spy, PS.getWidth() - spx*2, PS.getHeight() - 250 );
+super.setLayout( null );
+super.add( sp );
+*/

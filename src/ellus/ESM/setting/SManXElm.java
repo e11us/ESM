@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
 import ellus.ESM.Machine.display;
-import ellus.ESM.Machine.f;
 import ellus.ESM.Machine.helper;
-import ellus.ESM.pinnable.able_Interface.AbleSMXConfig;
+import ellus.ESM.pinnable.Able.AbleSMXConfig;
 import ellus.ESM.setting.SManXAttr.AttrType;
 
 

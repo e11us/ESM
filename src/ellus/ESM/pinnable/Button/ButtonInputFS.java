@@ -7,17 +7,20 @@ import java.awt.Paint;
 import ellus.ESM.ESMW.ESMPD;
 import ellus.ESM.ESMW.ESMPS;
 import ellus.ESM.pinnable.pin;
-import ellus.ESM.pinnable.able_Interface.AbleClickHighlight;
-import ellus.ESM.pinnable.able_Interface.AbleDoubleClick;
-import ellus.ESM.pinnable.able_Interface.AbleKeyboardFunInp;
-import ellus.ESM.pinnable.able_Interface.AbleKeyboardInput;
+import ellus.ESM.pinnable.Able.AbleClickHighlight;
+import ellus.ESM.pinnable.Able.AbleDoubleClick;
+import ellus.ESM.pinnable.Able.AbleKeyboardFunInp;
+import ellus.ESM.pinnable.Able.AbleKeyboardInput;
+import ellus.ESM.pinnable.Able.AbleSMXConfig;
 import ellus.ESM.roboSys.clipBoard;
 import ellus.ESM.setting.SCon;
+import ellus.ESM.setting.SManXAttr.AttrType;
+import ellus.ESM.setting.SManXElm;
 
 
 
-public class ButtonInputFS extends pin implements AbleClickHighlight, AbleKeyboardInput, AbleKeyboardFunInp, AbleDoubleClick {
-	private Color		bg1C, bg2C, txC, bg1CH, bg2CH, txCH;
+public class ButtonInputFS extends pin implements AbleClickHighlight, AbleKeyboardInput, AbleKeyboardFunInp, AbleDoubleClick, AbleSMXConfig {
+	private Color		bg1C, bg2C, txC, bg1CH, bg2CH, txCH, edC, edCH;
 	private int			xOS					= 0, yOS= 0;
 	private int			fontI				= 0;
 	private int			fontS				= 16;
@@ -31,6 +34,9 @@ public class ButtonInputFS extends pin implements AbleClickHighlight, AbleKeyboa
 	private boolean		inpModeCurblinkShow	= false;
 	private int			cutLen				= -1;
 	private Font		fon;
+	//
+	private SManXElm	elm;
+	private int			txOSX				= 5, txOSY= 5;
 
 	public ButtonInputFS( int[] list, Color[] colors, Color[] colors2, String msg, int fontInd, int fontsiz ) {
 		if( list.length != 6 || colors.length != 5 )
@@ -54,6 +60,44 @@ public class ButtonInputFS extends pin implements AbleClickHighlight, AbleKeyboa
 		fon= SCon.FontList.get( fontI ).deriveFont( (float)fontS );
 	}
 
+	public ButtonInputFS( SManXElm elm, String msg ) {
+		// x,y,w,h,wos,hof // bg1C, bg2C, edC, csC, txC
+		this.defMsg= msg;
+		this.elm= elm;
+		elm.setPin( this );
+		reset();
+	}
+
+	@Override
+	public void reset() {
+		super.setXY(
+				elm.getAttr( AttrType._location, "location" ).getLocation().getX(),
+				elm.getAttr( AttrType._location, "location" ).getLocation().getX() +
+						elm.getAttr( AttrType._int, "Width" ).getInteger(),
+				elm.getAttr( AttrType._location, "location" ).getLocation().getY(),
+				elm.getAttr( AttrType._location, "location" ).getLocation().getY() +
+						elm.getAttr( AttrType._int, "Height" ).getInteger() );
+		xOS= elm.getAttr( AttrType._int, "WidthOffSet" ).getInteger();
+		yOS= elm.getAttr( AttrType._int, "HeightOffSet" ).getInteger();
+		txOSX= elm.getAttr( AttrType._int, "TextOffSetX" ).getInteger();
+		txOSY= elm.getAttr( AttrType._int, "TextOffSetY" ).getInteger();
+		bg1C= elm.getAttr( AttrType._color, "BackgroundColor1" ).getColor();
+		bg2C= elm.getAttr( AttrType._color, "BackgroundColor2" ).getColor();
+		edC= elm.getAttr( AttrType._color, "EdgeColor" ).getColor();
+		txC= elm.getAttr( AttrType._color, "TextMsgColor" ).getColor();
+		bg1CH= elm.getAttr( AttrType._color, "BackgroundColorHighlighted1" ).getColor();
+		bg2CH= elm.getAttr( AttrType._color, "BackgroundColorHighlighted2" ).getColor();
+		edCH= elm.getAttr( AttrType._color, "EdgeColorHighlighted" ).getColor();
+		txCH= elm.getAttr( AttrType._color, "TextMsgColorHighlighted" ).getColor();
+		//
+		fontI= elm.getAttr( AttrType._int, "FontIndex" ).getInteger();
+		if( fontI >= SCon.FontList.size() )
+			fontI= 0;
+		fontS= elm.getAttr( AttrType._int, "FontSize" ).getInteger();
+		//
+		fon= SCon.FontList.get( fontI ).deriveFont( (float)fontS );
+	}
+
 	@Override
 	public void paint( ESMPD g, ESMPS pan ) {
 		//
@@ -71,8 +115,10 @@ public class ButtonInputFS extends pin implements AbleClickHighlight, AbleKeyboa
 					pan.w2bY( super.getYmin() ) + super.getHeight() - yOS,
 					3, txC );
 			// draw String now.
-			g.drawString( defMsg, pan.w2bX( super.getXmin() ) + 5 + xOS,
-					pan.w2bY( super.getYmin() ) - 5 + super.getHeight() - yOS, txC, fon );
+			if( defMsg == null )
+				defMsg= "";
+			g.drawString( defMsg, pan.w2bX( super.getXmin() ) + txOSX + xOS,
+					pan.w2bY( super.getYmin() ) - txOSY + super.getHeight() - yOS, txC, fon );
 		}else{
 			// gradient paint. the background of the button polygon.
 			Paint gp= new GradientPaint( pan.w2bX( super.getXmin() ), pan.w2bY( super.getYmin() ), bg1CH,
@@ -89,12 +135,12 @@ public class ButtonInputFS extends pin implements AbleClickHighlight, AbleKeyboa
 				if( cutLen == -1 )
 					cutLen= inputMsg.length() - 1;
 				g.drawString( inputMsg.substring( inputMsg.length() - cutLen, inputMsg.length() ),
-						pan.w2bX( super.getXmin() ) + 3 + xOS,
-						pan.w2bY( super.getYmin() ) - 5 + super.getHeight() - yOS, txCH, fon );
+						pan.w2bX( super.getXmin() ) + txOSX + xOS,
+						pan.w2bY( super.getYmin() ) - txOSY + super.getHeight() - yOS, txCH, fon );
 			}else{
 				cutLen= -1;
-				g.drawString( inputMsg, pan.w2bX( super.getXmin() ) + 3 + xOS,
-						pan.w2bY( super.getYmin() ) - 5 + super.getHeight() - yOS, txCH, fon );
+				g.drawString( inputMsg, pan.w2bX( super.getXmin() ) + txOSX + xOS,
+						pan.w2bY( super.getYmin() ) - txOSY + super.getHeight() - yOS, txCH, fon );
 			}
 			// draw cursor.
 			if( inpModeCurBlinkCount++ == inpModeCurBlinkThre ){
@@ -104,11 +150,11 @@ public class ButtonInputFS extends pin implements AbleClickHighlight, AbleKeyboa
 			if( inpModeCurblinkShow ){
 				if( cutLen != -1 ){
 					int LX= g.getTxtWid( inputMsg.substring( inputMsg.length() - cutLen, inputMsg.length() ), fon )
-							+ pan.w2bX( super.getXmin() ) + 5 + xOS;
+							+ pan.w2bX( super.getXmin() ) + txOSX + xOS;
 					g.drawLine( LX, pan.w2bY( super.getYmin() ) - 5 + super.getHeight() - yOS - fontS,
 							LX, pan.w2bY( super.getYmin() ) - 5 + super.getHeight() - yOS, 3, txCH );
 				}else{
-					int LX= g.getTxtWid( inputMsg, fon ) + pan.w2bX( super.getXmin() ) + 5 + xOS;
+					int LX= g.getTxtWid( inputMsg, fon ) + pan.w2bX( super.getXmin() ) + txOSX + xOS;
 					g.drawLine( LX, pan.w2bY( super.getYmin() ) - 5 + super.getHeight() - yOS - fontS,
 							LX, pan.w2bY( super.getYmin() ) - 5 + super.getHeight() - yOS, 3, txCH );
 				}
@@ -143,8 +189,16 @@ public class ButtonInputFS extends pin implements AbleClickHighlight, AbleKeyboa
 		inputMode= false;
 	}
 
+	public boolean isInputMode() {
+		return inputMode;
+	}
+
 	public String getInputMsg() {
 		return inputMsg.substring( 3, inputMsg.length() );
+	}
+
+	public void resetInputMsg() {
+		inputMsg= ">> ";
 	}
 
 	@Override

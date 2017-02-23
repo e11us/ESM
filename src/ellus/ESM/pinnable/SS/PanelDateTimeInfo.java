@@ -8,10 +8,12 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import ellus.ESM.ESMW.ESMPD;
 import ellus.ESM.ESMW.ESMPS;
+import ellus.ESM.Machine.f;
 import ellus.ESM.Machine.helper;
+import ellus.ESM.pinnable.pin2ScreenLocationer;
 import ellus.ESM.pinnable.pinSS;
-import ellus.ESM.pinnable.able_Interface.AbleHoverHighlight;
-import ellus.ESM.pinnable.able_Interface.AbleSMXConfig;
+import ellus.ESM.pinnable.Able.AbleHoverHighlight;
+import ellus.ESM.pinnable.Able.AbleSMXConfig;
 import ellus.ESM.setting.SCon;
 import ellus.ESM.setting.SManXAttr.AttrType;
 import ellus.ESM.setting.SManXElm;
@@ -26,6 +28,8 @@ public class PanelDateTimeInfo extends pinSS implements AbleHoverHighlight, Able
 	private int			refreshThres= 1000;
 	private long		lastRFtime	= helper.getTimeLong();
 	private Font		font		= null;
+	// this always remain center of screen.
+	private boolean		centered	= false;
 
 	public PanelDateTimeInfo( SManXElm inp ) {
 		// x,y,w,h, fontI, fontS, barXOS, barYOS, frameOSX | txC, br1C,br2C, edC;
@@ -62,6 +66,12 @@ public class PanelDateTimeInfo extends pinSS implements AbleHoverHighlight, Able
 			DateTimeFormatter fmt2= DateTimeFormat.forPattern( "kk : mm : ss" );
 			time= "Today: " + date.toString( fmt ) + "   Time: " + dt.toString( fmt2 );
 			lastRFtime= helper.getTimeLong();
+			//
+			if( !centered ){
+				this.setXY( 0, g.getTxtWid( time, font ), super.ymin, super.ymax );
+				pin2ScreenLocationer.centerThisX( this, pan );
+				centered= true;
+			}
 		}
 		g.drawString( time, super.xmin, super.ymin + fontS - 2, txC, font );
 	}

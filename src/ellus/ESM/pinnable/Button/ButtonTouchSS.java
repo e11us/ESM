@@ -7,8 +7,8 @@ import ellus.ESM.Machine.TimeLock;
 import ellus.ESM.Machine.display;
 import ellus.ESM.media.PlayerAudio;
 import ellus.ESM.pinnable.pin;
-import ellus.ESM.pinnable.able_Interface.AbleHoverHighlight;
-import ellus.ESM.pinnable.able_Interface.AbleSMXConfig;
+import ellus.ESM.pinnable.Able.AbleHoverHighlight;
+import ellus.ESM.pinnable.Able.AbleSMXConfig;
 import ellus.ESM.setting.SManXAttr.AttrType;
 import ellus.ESM.setting.SManXElm;
 

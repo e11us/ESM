@@ -12,6 +12,7 @@ import ellus.ESM.Machine.helper;
 import ellus.ESM.media.PlayerAudio;
 import ellus.ESM.pinnable.pin;
 import ellus.ESM.pinnable.Able.AbleClick;
+import ellus.ESM.pinnable.Able.AbleClickR;
 import ellus.ESM.pinnable.Able.AbleHoverHighlight;
 import ellus.ESM.pinnable.Able.AbleSMXConfig;
 import ellus.ESM.setting.SCon;
@@ -20,7 +21,8 @@ import ellus.ESM.setting.SManXElm;
 
 
 
-public class ButtonTextFS extends pin implements AbleHoverHighlight, AbleClick, AbleSMXConfig {
+// similar to FS, just changed the shape of the button a bit.
+public class ButtonTextFS2 extends pin implements AbleHoverHighlight, AbleClick, AbleClickR, AbleSMXConfig {
 	private int				WidOffSet	= 0, HeiOffSet= 0;
 	private int				fontI		= 0;
 	private int				fontS		= 16;
@@ -37,8 +39,10 @@ public class ButtonTextFS extends pin implements AbleHoverHighlight, AbleClick, 
 	private Color			fC			= null;
 	private int				delay;
 	private long			delayS		= 0;
+	//
+	private boolean			SSmode		= false;
 
-	public ButtonTextFS( int[] list, Color[] colors, Color[] colors2, String msg, int fontInd, int fontsiz ) {
+	public ButtonTextFS2( int[] list, Color[] colors, Color[] colors2, String msg, int fontInd, int fontsiz ) {
 		// x,y,w,h,wos,hof // bg1C, bg2C, edC, csC, txC
 		if( list.length != 6 || colors.length != 5 )
 			return;
@@ -62,7 +66,7 @@ public class ButtonTextFS extends pin implements AbleHoverHighlight, AbleClick, 
 		fon= SCon.FontList.get( fontI ).deriveFont( (float)fontS );
 	}
 
-	public ButtonTextFS( SManXElm elm, String msg ) {
+	public ButtonTextFS2( SManXElm elm, String msg ) {
 		// x,y,w,h,wos,hof // bg1C, bg2C, edC, csC, txC
 		this.elm= elm;
 		this.msg= msg;
@@ -70,15 +74,31 @@ public class ButtonTextFS extends pin implements AbleHoverHighlight, AbleClick, 
 		reset();
 	}
 
+	public ButtonTextFS2( SManXElm elm, String msg, int x, int y ) {
+		// x,y,w,h,wos,hof // bg1C, bg2C, edC, csC, txC
+		this.elm= elm;
+		this.msg= msg;
+		elm.setPin( this );
+		super.setXY( x, x, y, y );
+		SSmode= true;
+		reset();
+	}
+
 	@Override
 	public void reset() {
-		super.setXY(
-				elm.getAttr( AttrType._location, "location" ).getLocation().getX(),
-				elm.getAttr( AttrType._location, "location" ).getLocation().getX() +
-						elm.getAttr( AttrType._int, "Width" ).getInteger(),
-				elm.getAttr( AttrType._location, "location" ).getLocation().getY(),
-				elm.getAttr( AttrType._location, "location" ).getLocation().getY() +
-						elm.getAttr( AttrType._int, "Height" ).getInteger() );
+		if( SSmode ){
+			super.setXY(
+					super.getXmin(), super.getXmin() + elm.getAttr( AttrType._int, "Width" ).getInteger(),
+					super.getYmin(), super.getYmin() + elm.getAttr( AttrType._int, "Height" ).getInteger() );
+		}else{
+			super.setXY(
+					elm.getAttr( AttrType._location, "location" ).getLocation().getX(),
+					elm.getAttr( AttrType._location, "location" ).getLocation().getX() +
+							elm.getAttr( AttrType._int, "Width" ).getInteger(),
+					elm.getAttr( AttrType._location, "location" ).getLocation().getY(),
+					elm.getAttr( AttrType._location, "location" ).getLocation().getY() +
+							elm.getAttr( AttrType._int, "Height" ).getInteger() );
+		}
 		WidOffSet= elm.getAttr( AttrType._int, "WidthOffSet" ).getInteger();
 		HeiOffSet= elm.getAttr( AttrType._int, "HeightOffSet" ).getInteger();
 		txOSX= elm.getAttr( AttrType._int, "TextOffSetX" ).getInteger();
@@ -113,12 +133,12 @@ public class ButtonTextFS extends pin implements AbleHoverHighlight, AbleClick, 
 			// create polygon
 			Polygon pg= new Polygon();
 			pg.addPoint( pan.w2bX( super.getXmin() ) + WidOffSet, pan.w2bY( super.getYmin() ) );
-			pg.addPoint( pan.w2bX( super.getXmin() ) + super.getWidth(), pan.w2bY( super.getYmin() ) );
-			pg.addPoint( pan.w2bX( super.getXmin() ) + super.getWidth(),
-					pan.w2bY( super.getYmin() ) + super.getHeight() - HeiOffSet );
-			pg.addPoint( pan.w2bX( super.getXmin() ) + super.getWidth() - WidOffSet,
-					pan.w2bY( super.getYmin() ) + super.getHeight() );
-			pg.addPoint( pan.w2bX( super.getXmin() ), pan.w2bY( super.getYmin() ) + super.getHeight() );
+			pg.addPoint( pan.w2bX( super.getXmax() ) - WidOffSet, pan.w2bY( super.getYmin() ) );
+			pg.addPoint( pan.w2bX( super.getXmax() ), pan.w2bY( super.getYmin() ) + HeiOffSet );
+			pg.addPoint( pan.w2bX( super.getXmax() ), pan.w2bY( super.getYmax() ) - HeiOffSet );
+			pg.addPoint( pan.w2bX( super.getXmax() ) - WidOffSet, pan.w2bY( super.getYmax() ) );
+			pg.addPoint( pan.w2bX( super.getXmin() ) + WidOffSet, pan.w2bY( super.getYmax() ) );
+			pg.addPoint( pan.w2bX( super.getXmin() ), pan.w2bY( super.getYmax() ) - HeiOffSet );
 			pg.addPoint( pan.w2bX( super.getXmin() ), pan.w2bY( super.getYmin() ) + HeiOffSet );
 			// gradient paint. the background of the button polygon.
 			Paint gp= new GradientPaint( pan.w2bX( super.getXmin() ), pan.w2bY( super.getYmin() ), fC,
@@ -140,12 +160,12 @@ public class ButtonTextFS extends pin implements AbleHoverHighlight, AbleClick, 
 			// create polygon
 			Polygon pg= new Polygon();
 			pg.addPoint( pan.w2bX( super.getXmin() ) + WidOffSet, pan.w2bY( super.getYmin() ) );
-			pg.addPoint( pan.w2bX( super.getXmin() ) + super.getWidth(), pan.w2bY( super.getYmin() ) );
-			pg.addPoint( pan.w2bX( super.getXmin() ) + super.getWidth(),
-					pan.w2bY( super.getYmin() ) + super.getHeight() - HeiOffSet );
-			pg.addPoint( pan.w2bX( super.getXmin() ) + super.getWidth() - WidOffSet,
-					pan.w2bY( super.getYmin() ) + super.getHeight() );
-			pg.addPoint( pan.w2bX( super.getXmin() ), pan.w2bY( super.getYmin() ) + super.getHeight() );
+			pg.addPoint( pan.w2bX( super.getXmax() ) - WidOffSet, pan.w2bY( super.getYmin() ) );
+			pg.addPoint( pan.w2bX( super.getXmax() ), pan.w2bY( super.getYmin() ) + HeiOffSet );
+			pg.addPoint( pan.w2bX( super.getXmax() ), pan.w2bY( super.getYmax() ) - HeiOffSet );
+			pg.addPoint( pan.w2bX( super.getXmax() ) - WidOffSet, pan.w2bY( super.getYmax() ) );
+			pg.addPoint( pan.w2bX( super.getXmin() ) + WidOffSet, pan.w2bY( super.getYmax() ) );
+			pg.addPoint( pan.w2bX( super.getXmin() ), pan.w2bY( super.getYmax() ) - HeiOffSet );
 			pg.addPoint( pan.w2bX( super.getXmin() ), pan.w2bY( super.getYmin() ) + HeiOffSet );
 			// gradient paint. the background of the button polygon.
 			Paint gp= new GradientPaint( pan.w2bX( super.getXmin() ), pan.w2bY( super.getYmin() ), bg1C,
@@ -162,12 +182,12 @@ public class ButtonTextFS extends pin implements AbleHoverHighlight, AbleClick, 
 			// create polygon
 			Polygon pg= new Polygon();
 			pg.addPoint( pan.w2bX( super.getXmin() ) + WidOffSet, pan.w2bY( super.getYmin() ) );
-			pg.addPoint( pan.w2bX( super.getXmin() ) + super.getWidth(), pan.w2bY( super.getYmin() ) );
-			pg.addPoint( pan.w2bX( super.getXmin() ) + super.getWidth(),
-					pan.w2bY( super.getYmin() ) + super.getHeight() - HeiOffSet );
-			pg.addPoint( pan.w2bX( super.getXmin() ) + super.getWidth() - WidOffSet,
-					pan.w2bY( super.getYmin() ) + super.getHeight() );
-			pg.addPoint( pan.w2bX( super.getXmin() ), pan.w2bY( super.getYmin() ) + super.getHeight() );
+			pg.addPoint( pan.w2bX( super.getXmax() ) - WidOffSet, pan.w2bY( super.getYmin() ) );
+			pg.addPoint( pan.w2bX( super.getXmax() ), pan.w2bY( super.getYmin() ) + HeiOffSet );
+			pg.addPoint( pan.w2bX( super.getXmax() ), pan.w2bY( super.getYmax() ) - HeiOffSet );
+			pg.addPoint( pan.w2bX( super.getXmax() ) - WidOffSet, pan.w2bY( super.getYmax() ) );
+			pg.addPoint( pan.w2bX( super.getXmin() ) + WidOffSet, pan.w2bY( super.getYmax() ) );
+			pg.addPoint( pan.w2bX( super.getXmin() ), pan.w2bY( super.getYmax() ) - HeiOffSet );
 			pg.addPoint( pan.w2bX( super.getXmin() ), pan.w2bY( super.getYmin() ) + HeiOffSet );
 			// gradient paint. the background of the button polygon.
 			Paint gp= new GradientPaint( pan.w2bX( super.getXmin() ), pan.w2bY( super.getYmin() ), bg1CH,
@@ -219,7 +239,8 @@ public class ButtonTextFS extends pin implements AbleHoverHighlight, AbleClick, 
 	}
 
 	@Override
-	public void B1clickAction( int x, int y ) {
-		// TODO Auto-generated method stub
-	}
+	public void B1clickAction( int x, int y ) {}
+
+	@Override
+	public void B3clickAction( int x, int y ) {}
 }

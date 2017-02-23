@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import ellus.ESM.pinnable.pinLF;
 import ellus.ESM.pinnable.pinSS;
 import ellus.ESM.pinnable.pinnable;
-import ellus.ESM.pinnable.able_Interface.AbleMouseDrag;
+import ellus.ESM.pinnable.Able.AbleMouseDrag;
 
 
 
@@ -80,6 +80,10 @@ public class ESMPL {
 		}
 	}
 
+	protected ArrayList <pinnable> getAll( int i ) {
+		return (ArrayList <pinnable>)layers.get( i ).clone();
+	}
+
 	protected ArrayList <pinnable> getAll() {
 		ArrayList <pinnable> ret= new ArrayList <>();
 		for( int i= 0; i < pinnableTotalLayer; i++ ){
@@ -153,9 +157,16 @@ public class ESMPL {
 				*/
 				//
 				// check if visable, yes then print.
-				if( pin.getXmax() < PS.ViewXmin || pin.getYmax() < PS.ViewYmin ||
-						pin.getXmin() > PS.ViewXmax || pin.getYmin() > PS.ViewYmax ){}else{
-					pin.paint( g, PS );
+				// diff print policy depends on if edgeviewLim is set.
+				if( PS.EdgeViewLimitY != 0 || PS.EdgeViewLimitX != 0 ){
+					if( pin.getXmax() < PS.ViewXmax && pin.getYmax() < PS.ViewYmax &&
+							pin.getXmin() > PS.ViewXmin && pin.getYmin() > PS.ViewYmin )
+						pin.paint( g, PS );
+				}else{
+					if( pin.getXmax() < PS.ViewXmin || pin.getYmax() < PS.ViewYmin ||
+							pin.getXmin() > PS.ViewXmax || pin.getYmin() > PS.ViewYmax ){}else{
+						pin.paint( g, PS );
+					}
 				}
 			}
 		}

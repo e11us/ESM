@@ -8,15 +8,15 @@ import ellus.ESM.ESMW.ESMPD;
 import ellus.ESM.ESMW.ESMPS;
 import ellus.ESM.pinnable.pin;
 import ellus.ESM.pinnable.pinnable;
-import ellus.ESM.pinnable.able_Interface.AbleHoverHighlight;
-import ellus.ESM.pinnable.able_Interface.AbleMouseWheel;
-import ellus.ESM.pinnable.able_Interface.AbleSMXConfig;
+import ellus.ESM.pinnable.Able.AbleHoverHighlight;
+import ellus.ESM.pinnable.Able.AbleMouseWheel;
+import ellus.ESM.pinnable.Able.AbleSMXConfig;
 import ellus.ESM.setting.SManXAttr.AttrType;
 import ellus.ESM.setting.SManXElm;
 
 
 
-public class PanelContainer extends pin implements AbleHoverHighlight, AbleMouseWheel, AbleSMXConfig {
+public class PanelContainerScroll extends pin implements AbleHoverHighlight, AbleMouseWheel, AbleSMXConfig {
 	private Color					bg1C, bg2C, edC;
 	private int						edsize;
 	private SManXElm				elm;
@@ -25,17 +25,17 @@ public class PanelContainer extends pin implements AbleHoverHighlight, AbleMouse
 	private ArrayList <pinnable>	cont;
 	private int						maxPerline	= 0;
 	private int						maxLineTot	= 0;
-	private boolean SSmode= false;
+	private boolean					SSmode		= false;
 
-	public PanelContainer( SManXElm elm, int x, int y, ArrayList <pinnable> cont ) {
+	public PanelContainerScroll( SManXElm elm, int x, int y, ArrayList <pinnable> cont ) {
 		this.elm= elm;
 		super.setXY( x, x + 1, y, y + 1 );
 		this.cont= cont;
 		elm.setPin( this );
 		reset();
 	}
-	
-	public PanelContainer( SManXElm elm, ArrayList <pinnable> cont ) {
+
+	public PanelContainerScroll( SManXElm elm, ArrayList <pinnable> cont ) {
 		this.elm= elm;
 		this.cont= cont;
 		elm.setPin( this );
@@ -47,20 +47,20 @@ public class PanelContainer extends pin implements AbleHoverHighlight, AbleMouse
 	public void reset() {
 		if( cont == null || cont.size() == 0 )
 			return;
-		if( SSmode ) {
+		if( SSmode ){
 			super.setXY(
 					elm.getAttr( AttrType._location, "Location" ).getLocation().getX(),
 					elm.getAttr( AttrType._location, "Location" ).getLocation().getX() +
-					elm.getAttr( AttrType._int, "Width" ).getInteger(),
+							elm.getAttr( AttrType._int, "Width" ).getInteger(),
 					elm.getAttr( AttrType._location, "Location" ).getLocation().getY(),
 					elm.getAttr( AttrType._location, "Location" ).getLocation().getY() +
-					elm.getAttr( AttrType._int, "Height" ).getInteger() );
-		}else {
+							elm.getAttr( AttrType._int, "Height" ).getInteger() );
+		}else{
 			super.setXY(
 					super.getXmin(), super.getXmin() +
 							elm.getAttr( AttrType._int, "Width" ).getInteger(),
 					super.getYmin(), super.getYmin() +
-							elm.getAttr( AttrType._int, "Height" ).getInteger() );	
+							elm.getAttr( AttrType._int, "Height" ).getInteger() );
 		}
 		//
 		bg1C= elm.getAttr( AttrType._color, "BackgroundColor1" ).getColor();
@@ -112,6 +112,11 @@ public class PanelContainer extends pin implements AbleHoverHighlight, AbleMouse
 			xS+= xSep + tmp.getWidth();
 			itemPerlin++ ;
 		}
+	}
+
+	public void resetCont( ArrayList <pinnable> cont ) {
+		this.cont= cont;
+		reset();
 	}
 
 	@Override

@@ -2,13 +2,12 @@ package ellus.ESM.ESMW;
 
 import java.awt.Color;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
+import ellus.ESM.pinnable.Able.AbleClickHighlight;
+import ellus.ESM.pinnable.Able.AbleKeyboardFunInp;
+import ellus.ESM.pinnable.Able.AbleKeyboardInput;
 import ellus.ESM.pinnable.Button.ButtonInputFS;
 import ellus.ESM.pinnable.Button.ButtonTextFS;
-import ellus.ESM.pinnable.able_Interface.AbleClickHighlight;
-import ellus.ESM.pinnable.able_Interface.AbleKeyboardFunInp;
-import ellus.ESM.pinnable.able_Interface.AbleKeyboardInput;
 import ellus.ESM.setting.SCon;
 import ellus.ESM.setting.SManX;
 import ellus.ESM.setting.SManXAttr;
@@ -175,11 +174,6 @@ public class ESMW_SMXConfig extends ESMW {
 
 	private ESMPanel setUpHomePanel( SManXElm config ) {
 		ESMPanel pan= new ESMPanel( config.getElm( "ESMPanel", "ConfigHome" ) ) {
-			@Override
-			protected void checkB2PressNGE( MouseWheelEvent e ) {
-				homePanel.PS.changeViewCenter( 0, e.getWheelRotation(), "mouseWheel" );
-			}
-
 			@Override
 			protected synchronized void CheckB3Click( MouseEvent e ) {
 				if( currentElmNest.size() > 1 ){

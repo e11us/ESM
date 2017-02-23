@@ -1,11 +1,12 @@
 package ellus.ESM.pinnable.SS;
 
-import java.awt.Color;
 import java.awt.Image;
+import java.util.ArrayList;
 import ellus.ESM.ESMW.ESMPD;
 import ellus.ESM.ESMW.ESMPS;
 import ellus.ESM.Machine.helper;
 import ellus.ESM.pinnable.pinSS;
+import ellus.ESM.setting.SCon;
 
 
 
@@ -15,12 +16,24 @@ public class PanelBackgroundPicSuff extends pinSS {
 	private long	timeLastChange		= helper.getTimeLong();
 	private int		timeChangeLocaDelay	= 0;
 
+	public PanelBackgroundPicSuff( String path, int changeTime ) {
+		ArrayList <String> imgPath= helper.getDirFile( path, SCon.ImageExtList );
+		if( imgPath.size() > 0 ){
+			img= new Image[imgPath.size()];
+			for( int i= 0; i < imgPath.size(); i++ ){
+				img[i]= helper.getImage( imgPath.get( i ) );
+			}
+			timeChangeLocaDelay= changeTime;
+			image= this.img[(int) ( Math.random() * this.img.length )];
+		}
+	}
+
 	public PanelBackgroundPicSuff( Image[] img, int changeTime ) {
 		this.img= img;
 		timeChangeLocaDelay= changeTime;
 		image= this.img[(int) ( Math.random() * this.img.length )];
 	}
-	
+
 	public PanelBackgroundPicSuff( Image imge ) {
 		image= imge;
 	}
@@ -29,10 +42,12 @@ public class PanelBackgroundPicSuff extends pinSS {
 	public void paint( ESMPD g, ESMPS pan ) {
 		int x= 0;
 		int y= 0;
-		if( img != null &&  ( helper.getTimeLong() - timeLastChange ) / 1000 > timeChangeLocaDelay ){
+		if( img != null && ( helper.getTimeLong() - timeLastChange ) / 1000 > timeChangeLocaDelay ){
 			timeLastChange= helper.getTimeLong();
 			image= this.img[(int) ( Math.random() * this.img.length )];
 		}
+		if( image == null )
+			return;
 		//
 		int wid= pan.getImageWidth( image );
 		int hei= pan.getImageHeight( image );

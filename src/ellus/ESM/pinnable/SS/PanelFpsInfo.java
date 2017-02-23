@@ -6,8 +6,9 @@ import ellus.ESM.ESMW.ESMPD;
 import ellus.ESM.ESMW.ESMPS;
 import ellus.ESM.Machine.helper;
 import ellus.ESM.data.Source.SourceDouble;
+import ellus.ESM.pinnable.pin2ScreenLocationer;
 import ellus.ESM.pinnable.pinSS;
-import ellus.ESM.pinnable.able_Interface.AbleSMXConfig;
+import ellus.ESM.pinnable.Able.AbleSMXConfig;
 import ellus.ESM.setting.SCon;
 import ellus.ESM.setting.SManXAttr.AttrType;
 import ellus.ESM.setting.SManXElm;
@@ -27,6 +28,8 @@ public class PanelFpsInfo extends pinSS implements AbleSMXConfig {
 	private long			startTime	= helper.getTimeLong();
 	private String			uptime		= "0";
 	private SourceDouble	RWT			= null;
+	//
+	private boolean			setLoca		= false;
 
 	public PanelFpsInfo( SManXElm inp, SourceDouble RWT ) {
 		// x,y,w,h, fontI, fontS, barXOS, barYOS, frameOSX | txC, br1C,br2C, edC;
@@ -77,6 +80,12 @@ public class PanelFpsInfo extends pinSS implements AbleSMXConfig {
 			}
 			if( up > ( 60 * 24 ) ){
 				uptime= ( up / 60 / 24 ) + "Day";
+			}
+			if( !setLoca ){
+				setLoca= true;
+				super.setXY( 0, g.getTxtWid( "UT - " + uptime + "  FPS - " + fps + "  RWT - 2", font ), super.ymin,
+						super.ymax );
+				pin2ScreenLocationer.bottomLeft( this, pan );
 			}
 		}
 		fpsCount++ ;

@@ -2,12 +2,11 @@ package ellus.ESM.setting;
 
 import java.awt.Color;
 import ellus.ESM.Machine.cor2D;
-import ellus.ESM.Machine.f;
 import ellus.ESM.Machine.helper;
 
 
 
-public class SManXAttr implements Comparable <SManXAttr>{
+public class SManXAttr implements Comparable <SManXAttr> {
 	//
 	public enum AttrType {
 		_string, _int, _double, _color, _location, _boolean
@@ -211,7 +210,7 @@ public class SManXAttr implements Comparable <SManXAttr>{
 	protected String		name= null;
 	protected String		val	= null;
 	protected final String	ID	= helper.getCurrentTimeStamp() + helper.rand32AN().substring( 0, 5 );
-	
+
 	@Override
 	public int compareTo( SManXAttr o ) {
 		return this.type.toString().compareTo( o.type.toString() );

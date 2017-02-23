@@ -48,10 +48,12 @@ public class NoteLink extends pinSS {
 
 	@Override
 	public void paint( ESMPD g, ESMPS pan ) {
+		data.refreshCenter();
 		cor2D p1= (cor2D)para[7];
 		cor2D p2= (cor2D)para[8];
 		//
-		g.drawLine( ( p1.getX() ), pan.w2bY( p1.getY() ),
-				pan.w2bX( p2.getX() ), pan.w2bY( p2.getY() ), GCSV.pinLinkLinkThic, GCSV.pinLinkColor );
+		g.drawLine( pan.w2bX( p1.getX() ), pan.w2bY( p1.getY() ),
+				pan.w2bX( p2.getX() ), pan.w2bY( p2.getY() ),
+				GCSV.pinLinkLinkThic, GCSV.pinLinkColor );
 	}
 }

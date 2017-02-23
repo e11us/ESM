@@ -8,7 +8,7 @@ import ellus.ESM.ESMW.ESMPD;
 import ellus.ESM.ESMW.ESMPS;
 import ellus.ESM.Machine.helper;
 import ellus.ESM.pinnable.pinSS;
-import ellus.ESM.pinnable.able_Interface.AbleSMXConfig;
+import ellus.ESM.pinnable.Able.AbleSMXConfig;
 import ellus.ESM.setting.SCon;
 import ellus.ESM.setting.SManXAttr;
 import ellus.ESM.setting.SManXElm;

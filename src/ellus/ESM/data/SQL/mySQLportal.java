@@ -2,131 +2,173 @@ package ellus.ESM.data.SQL;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import ellus.ESM.Machine.display;
 import ellus.ESM.Machine.f;
 import ellus.ESM.Machine.helper;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
+import ellus.ESM.setting.SMan;
 
 
 
 public class mySQLportal {
-	public static final String	tableName	= "ESM_table";
-	public static final String id1= "_ID_Date";
-	public static final String id2= "_ID_Time";
+	public static final String			tableName	= "ESM_table";
+	public static final String			id1			= "_ID_Date";
+	public static final String			id2			= "_ID_Time";
 	//
-	private static Connection	con			= null;
-	private static ArrayList<String> cols= null;
-	private static ArrayList<String> colsType= new ArrayList<String>();;
+	private static Connection			con			= null;
+	private static ArrayList <String>	cols		= null;
+	private static ArrayList <String>	colsType	= new ArrayList <>();;
 	//
+	private static boolean				outputMsg	= false;
 
-	public static void createMasterTable() {
-		createESMtable();
+	public static boolean addCol( String name, String type ) {
+		try{
+			ExecUpdate( "ALTER TABLE " + tableName + " ADD " + name + " " + type + ";" );
+		}catch ( SQLException e ){
+			e.printStackTrace();
+			return false;
+		}
+		return true;
 	}
 
-	public static void addCol( String name, String type  ) {
-		ExecUpdate( "ALTER TABLE " + tableName + " ADD " + name + " " + type +";" );
-	}
-	
 	public static ArrayList <String> getAllCol() {
 		if( cols == null )
-			refreshAllCol();
+			connect();
 		return (ArrayList <String>)cols.clone();
 	}
-	
-	public static boolean insert( ArrayList<String> name, ArrayList<String> val ) {
+
+	public static boolean insert( ArrayList <String> name, ArrayList <String> val ) {
 		if( name == null || val == null || name.size() != val.size() || name.size() == 0 )
 			return false;
 		//
 		if( cols == null )
-			refreshAllCol();
+			connect();
 		//
 		try{
-			String time= helper.getCurrentTime() + "" +  
-					helper.getCurrentTimeMS()  + "" + (int)(Math.random() * 10)
-					+ (int)(Math.random() * 10 ) +""+ (int)(Math.random() * 10);
+			String time= helper.getCurrentTime() + "" +
+					helper.getCurrentTimeMS() + "" + (int) ( Math.random() * 10 )
+					+ (int) ( Math.random() * 10 ) + "" + (int) ( Math.random() * 10 );
 			//
 			String newAC= "INSERT INTO " + tableName + " ( " + id1 + "," + id2 + ",";
 			String newVa= ") VALUES ( " + helper.getCurrentDate() + "," + time + ",";
 			boolean last= false;
-			for( int i= 0; i < name.size(); i++ ) {
+			for( int i= 0; i < name.size(); i++ ){
 				// check if colume exists, or if this is id.
 				if( !cols.contains( name.get( i ) ) || name.get( i ).equals( id1 ) || name.get( i ).equals( id2 )
-						|| val.get( i ).length() == 0 || helper.AllEmptySpace( val.get( i ) ) ) 
+						|| val.get( i ).length() == 0 || helper.AllEmptySpace( val.get( i ) ) )
 					continue;
 				//
-				if( last ) {
+				if( last ){
 					newAC+= ",";
 					newVa+= ",";
 					last= false;
 				}
 				//
-				newAC += name.get( i );
+				newAC+= name.get( i );
 				// store all val as string.
-				newVa += "'" + val.get( i ).replace( '\'', '_' ) + "'" ;
+				newVa+= "'" + val.get( i ).replace( '\'', '_' ) + "'";
 				last= true;
 			}
 			// remove end ,
-			newAC.substring( 0, newAC.length() - 1  );
-			newVa.substring( 0, newVa.length() - 1  );
+			newAC.substring( 0, newAC.length() - 1 );
+			newVa.substring( 0, newVa.length() - 1 );
 			ExecUpdate( newAC + newVa + " );" );
+			//
 		}catch ( Exception e ){
 			e.printStackTrace();
 			return false;
 		}
 		return true;
 	}
-	
-	public static void getByFunc( String func, int lim ) {
+
+	public static ArrayList <sqlResult> getByFunc( String func, int lim, ArrayList <String> name,
+			ArrayList <String> val ) {
+		//
+		if( cols == null )
+			connect();
+		//
 		try{
-			ResultSet rsmd= ExecQuery("SELECT * FROM " + tableName + 
-					" WHERE functional" + " = '" + func + "' LIMIT " + lim);
-			while( rsmd.next() ) {
-				//
-				
-				
-				
-				
-				
-				
-				
-				
-				
+			String query= "SELECT * FROM " + tableName +
+					" WHERE functional" + " = '" + func + "' ";
+			if( name != null ){
+				for( int i= 0; i < name.size(); i++ ){
+					// check if colume exists, or if this is id.
+					if( !cols.contains( name.get( i ) ) || name.get( i ).equals( id1 ) || name.get( i ).equals( id2 )
+							|| val.get( i ).length() == 0 || helper.AllEmptySpace( val.get( i ) ) )
+						continue;
+					query+= " AND " + name.get( i ) + " = '" + val.get( i ) + "' ";
+				}
 			}
-		}catch ( SQLException e ){}	
+			if( lim > 0 )
+				query+= " LIMIT " + lim;
+			ResultSet res= ExecQuery( query );
+			ResultSetMetaData rsmd= res.getMetaData();
+			//
+			ArrayList <sqlResult> ret= new ArrayList <>();
+			sqlResult rs;
+			while( res.next() ){
+				rs= new sqlResult();
+				for( int i= 0; i < rsmd.getColumnCount(); i++ ){
+					rs.colName.add( rsmd.getColumnName( i + 1 ) );
+					rs.type.add( rsmd.getColumnTypeName( i + 1 ) );
+					rs.val.add( res.getObject( i + 1 ) );
+				}
+				ret.add( rs );
+			}
+			return ret;
+		}catch ( SQLException e ){}
+		return null;
 	}
-	
+
+	public static void close() {
+		try{
+			if( con != null )
+				con.close();
+		}catch ( SQLException e ){
+			e.printStackTrace();
+		}
+		cols= null;
+	}
+
 	public static void connect() {
 		try{
-			if( con == null || !con.isValid( 5 ) )
+			if( con == null || !con.isValid( 5 ) ){
 				connectTo();
+				createESMtable();
+				refreshAllCol();
+				//
+				Thread.sleep( 10 );
+			}
 		}catch ( SQLException e ){
+			e.printStackTrace();
+		}catch ( InterruptedException e ){
 			e.printStackTrace();
 		}
 	}
 
 	/*
-	 * 
+	 *
 	 * ---------------------------------------------------------------------
-	 * 
+	 *
 	 */
-	
 	private static String filterIllegalChar( String inp ) {
 		//if( inp == null || inp.length() == 0 )
-			return null;
+		return null;
 	}
+
 	private static void connectTo() {
-		display.println( "data.mySQLportal", "connectTo()" );
+		if( outputMsg )
+			display.println( "data.mySQLportal", "connectTo()" );
 		try{
 			Class.forName( "com.mysql.jdbc.Driver" );
 			//
-			String userName= "user";
-			String password= "passowrd";
-			String url= "localhost ?? "
+			String userName= SMan.getSetting( 2010 );
+			String password= SMan.getSetting( 2011 );
+			String url= SMan.getSetting( 2012 );
 			//
 			con= DriverManager.getConnection( url, userName, password );
 			display.println( "data.mySQLportal", "connection established successfully." );
@@ -137,13 +179,11 @@ public class mySQLportal {
 		}catch ( ClassNotFoundException e ){
 			e.printStackTrace();
 		}
-		//
-		createESMtable();
 	}
 
 	private static void createESMtable() {
-		display.println( "data.mySQLportal", "createESMtable()" );
-		connect();
+		if( outputMsg )
+			display.println( "data.mySQLportal", "createESMtable()" );
 		//
 		String createString= "create table IF NOT EXISTS " + tableName + " (" +
 				id1 + " INT, " +
@@ -163,65 +203,52 @@ public class mySQLportal {
 				"urgency char(1), " +
 				"importancy char(1), " +
 				"ratingPoint char(1), " +
-				"PRIMARY KEY ("+id1+","+id2+") " +
+				"PRIMARY KEY (" + id1 + "," + id2 + ") " +
 				");";
 		Statement stmt= null;
 		try{
 			stmt= con.createStatement();
 			stmt.executeUpdate( createString );
 			stmt.close();
-			display.println( "data.mySQLportal", "master table is refreshed." );
+			if( outputMsg )
+				display.println( "data.mySQLportal", "master table is refreshed." );
 		}catch ( SQLException e ){
 			e.printStackTrace();
 		}
 		//
 	}
-	
+
 	public static void refreshAllCol() {
 		display.println( "data.mySQLportal", "refreshAllCol()" );
-		try{
-			if( con == null || !con.isValid( 5 ) )
-				connectTo();
-		}catch ( SQLException e1 ){}
 		//
-		colsType= new ArrayList<>();
+		colsType= new ArrayList <>();
 		ArrayList <String> col= new ArrayList <>();
 		try{
-			ResultSetMetaData rsmd= ExecQuery("SELECT * FROM " + tableName + " LIMIT 1" ).getMetaData();
-			for( int i= 1; i <= rsmd.getColumnCount(); i++ ) {
-				col.add(  rsmd.getColumnName( i ) );
-				colsType.add( rsmd.getColumnTypeName( i )  );
+			ResultSetMetaData rsmd= ExecQuery( "SELECT * FROM " + tableName + " LIMIT 1" ).getMetaData();
+			for( int i= 1; i <= rsmd.getColumnCount(); i++ ){
+				col.add( rsmd.getColumnName( i ) );
+				colsType.add( rsmd.getColumnTypeName( i ) );
 			}
 		}catch ( SQLException e ){}
 		// refresh all the cols.
 		cols= col;
-		/*
-		for( int i= 0; i < cols.size(); i++ ) {
-			display.println( "data.mySQLportal", "column(" + (i+1) + "): <" 
-					+  cols.get( i ) + ">" + " <" + colsType.get( i ) + ">" );
-		}
-		*/
-	} 
-	
-	private static void ExecUpdate( String inp ) {
-		display.println( "data.mySQLportal", "ExecUpdate()" );
+	}
+
+	private static void ExecUpdate( String inp ) throws SQLException {
 		connect();
-		display.println( "data.mySQLportal", "ExecUpdate: " + inp );
+		if( outputMsg )
+			display.println( "data.mySQLportal", "ExecUpdate: " + inp );
 		//
 		Statement stmt= null;
-		try{
-			stmt= con.createStatement();
-			stmt.executeUpdate( inp );
-			stmt.close();
-			display.println( "data.mySQLportal", "master table is refreshed." );
-		}catch ( SQLException e ){
-			e.printStackTrace();
-		}
+		stmt= con.createStatement();
+		stmt.executeUpdate( inp );
+		stmt.close();
 	}
 
 	private static ResultSet ExecQuery( String inp ) {
 		connect();
-		display.println( "data.mySQLportal", "ExecQuery: " + inp );
+		if( outputMsg )
+			display.println( "data.mySQLportal", "ExecQuery: " + inp );
 		//
 		try{
 			Statement stmt= con.createStatement();

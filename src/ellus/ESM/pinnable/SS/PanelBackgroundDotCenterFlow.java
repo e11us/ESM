@@ -4,7 +4,7 @@ import java.awt.Color;
 import ellus.ESM.ESMW.ESMPD;
 import ellus.ESM.ESMW.ESMPS;
 import ellus.ESM.pinnable.pinSS;
-import ellus.ESM.pinnable.able_Interface.AbleSMXConfig;
+import ellus.ESM.pinnable.Able.AbleSMXConfig;
 import ellus.ESM.setting.SManXAttr;
 import ellus.ESM.setting.SManXElm;
 
@@ -20,6 +20,7 @@ public class PanelBackgroundDotCenterFlow extends pinSS implements AbleSMXConfig
 	private ESMPS		PS;
 	private int			colorbase	= 0;
 	private int			colorplus	= 0;
+	private int			dir			= 0;
 
 	public PanelBackgroundDotCenterFlow( SManXElm inp, ESMPS PS ) {
 		this.inp= inp;
@@ -36,6 +37,7 @@ public class PanelBackgroundDotCenterFlow extends pinSS implements AbleSMXConfig
 		this.revDirExt= inp.getAttr( SManXAttr.AttrType._int, "ReverseDirectionFromScreenDistance" ).getInteger();
 		this.colorbase= inp.getAttr( SManXAttr.AttrType._int, "ColorBase" ).getInteger();
 		this.colorplus= inp.getAttr( SManXAttr.AttrType._int, "ColorPlus" ).getInteger();
+		dir= inp.getAttr( SManXAttr.AttrType._int, "Direction" ).getInteger();
 		//
 		trains= new train[inp.getAttr( SManXAttr.AttrType._int, "TotalTrain#" ).getInteger()];
 		if( trains.length == 0 )
@@ -94,9 +96,13 @@ public class PanelBackgroundDotCenterFlow extends pinSS implements AbleSMXConfig
 		//
 		void init() {
 			double rand;
-			//rand= Math.random() * ( xBand + yBand );
-			//if( rand > xBand ){
-			rand= Math.random();
+			if( dir == 0 )
+				rand= Math.random();
+			else{
+				if( dir > 0 )
+					rand= 0;
+				else rand= 1;
+			}
 			if( rand > 0.5 ){
 				w= 20 + (int) ( Math.random() * 300 );
 				h= (int) ( 2 + Math.random() * 3 );

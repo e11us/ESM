@@ -72,27 +72,28 @@ import java.util.TimerTask;
 
 
 public class keyboard extends TimerTask {
-	private Robot	robot;
-	private String	msg;
+	private static Robot	robot	= null;
+	private static boolean	init	= false;
+	private String			msg;
 
 	public keyboard( String msg ) throws AWTException {
-		this.robot= new Robot();
 		this.msg= msg;
 	}
 
-	public void type( String characters ) {
-		int length= characters.length();
-		for( int i= 0; i < length; i++ ){
-			char character= characters.charAt( i );
-			type( character );
-		}
+	@Override
+	public void run() {
+		typeC( msg );
+	}
+
+	public static void type( String str ) {
+		typeC( str );
 	}
 
 	public void type_TabAlt() {
 		doType( VK_ALT, VK_TAB );
 	}
 
-	private void type( char character ) {
+	private static void type( char character ) {
 		switch( character ){
 			case 'a' :
 				doType( VK_A );
@@ -391,11 +392,11 @@ public class keyboard extends TimerTask {
 		}
 	}
 
-	private void doType( int... keyCodes ) {
+	private static void doType( int... keyCodes ) {
 		doType( keyCodes, 0, keyCodes.length );
 	}
 
-	private void doType( int[] keyCodes, int offset, int length ) {
+	private static void doType( int[] keyCodes, int offset, int length ) {
 		if( length == 0 ){
 			return;
 		}
@@ -404,15 +405,24 @@ public class keyboard extends TimerTask {
 		robot.keyRelease( keyCodes[offset] );
 	}
 
-	@Override
-	public void run() {
-		type( msg );
+	private static synchronized void typeC( String characters ) {
+		if( !init )
+			init();
+		if( characters == null )
+			return;
+		int length= characters.length();
+		for( int i= 0; i < length; i++ ){
+			char character= characters.charAt( i );
+			type( character );
+		}
+	}
+
+	private static void init() {
+		try{
+			robot= new Robot();
+			init= true;
+		}catch ( AWTException e ){
+			e.printStackTrace();
+		}
 	}
 }
-/* String text = "Hello World"; StringSelection stringSelection = new
- * StringSelection(text); Clipboard clipboard =
- * Toolkit.getDefaultToolkit().getSystemClipboard();
- * clipboard.setContents(stringSelection, stringSelection);
- * Robot robot = new Robot(); robot.keyPress(KeyEvent.VK_CONTROL);
- * robot.keyPress(KeyEvent.VK_V); robot.keyRelease(KeyEvent.VK_V);
- * robot.keyRelease(KeyEvent.VK_CONTROL); */

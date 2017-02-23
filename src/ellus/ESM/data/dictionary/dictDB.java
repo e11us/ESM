@@ -4,9 +4,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import ellus.ESM.Machine.BArray;
 import ellus.ESM.Machine.display;
+import ellus.ESM.Machine.f;
 import ellus.ESM.Machine.helper;
-import ellus.ESM.data.WordEng;
+import ellus.ESM.data.SQL.mySQLportal;
+import ellus.ESM.data.SQL.sqlResult;
 import ellus.ESM.pinnable.Button.ButtonTextFS;
 import ellus.ESM.setting.SMan;
 
@@ -17,46 +20,47 @@ import ellus.ESM.setting.SMan;
 ||||--------------------------------------------------------------------------------------------*/
 public class dictDB {
 	// existing database.
-	protected final static ArrayList <WordEng>	englishWords		= new ArrayList <>();
-	protected final static ArrayList <String>	exitingDB			= new ArrayList <>();
 	protected final static int					updateMultiMax		= 16;
-	//
-	protected static ArrayList <String>			updateDB			= new ArrayList <>();
+	protected static BArray <String>			updateDB			= new BArray <>();
 	private static ArrayList <dictDB_dfGetter>	updater				= null;
 	private static int							updateDB_tot;
 	private static int							updateDB_lastPerc	= 0;
 	private static ButtonTextFS					updateBut			= null;
 	private static boolean						updateIng			= false;
-
+	//
+	private static ArrayList <String>			sqlName				= null;
+	private static final String					sqlfuncName			= "DictionaryEng";
 	// for update db.
 	//private final ArrayList <dictDB_dfGetter>	dfGetter			= new ArrayList <>();
-	public static WordEng getWord( String word ) {
-		// check DB first.
-		display.println( "dictionary.dictDB", "Getting word: " + word + " - Total in lib: " + exitingDB.size() );
-		for( String spell : exitingDB ){
-			if( spell.toLowerCase().equals( word.toLowerCase() ) ){
-				WordEng aWord= new WordEng( word + ".txt",
-						SMan.getSetting( 0 ) + SMan.getSetting( 202 ),
-						SMan.getSetting( 0 ) + SMan.getSetting( 201 ) );
-				englishWords.add( aWord );
-				return aWord;
+
+	/*||----------------------------------------------------------------------------------------------
+	 ||| get def for a word.
+	||||--------------------------------------------------------------------------------------------*/
+	public static String getWord( String word ) {
+		ArrayList <String> name= new ArrayList <>();
+		ArrayList <String> val= new ArrayList <>();
+		name.add( "keyword" );
+		val.add( word.toLowerCase() );
+		ArrayList <sqlResult> res= mySQLportal.getByFunc( "DictionaryEng", 5, name, val );
+		if( res.size() > 0 ){
+			ArrayList <String> def= helper.str2ALstr( (String)res.get( 0 ).val.get( 4 ) );
+			def.add( 0, "" );
+			def.add( 0, ">> " + word + " <<" );
+			char s;
+			for( int i= 2; i < def.size(); i++ ){
+				s= def.get( i ).charAt( 0 );
+				if( s == 'r' || s == 'S' ){
+					def.remove( i );
+					i-- ;
+					continue;
+				}
+				if( s == '-' ){
+					def.remove( i );
+					def.add( i, "" );
+				}
 			}
-		}
-		// check if known bad word.
-		if( new File( SMan.getSetting( 0 ) + SMan.getSetting( 204 ) + "/" + word ).exists() )
-			return null;
-		// get it now. load it in db.
-		dictDB_dfGetter nwg= new dictDB_dfGetter();
-		nwg.updateAword( word );
-		WordEng aWord= new WordEng( word + ".txt",
-				SMan.getSetting( 0 ) + SMan.getSetting( 202 ),
-				SMan.getSetting( 0 ) + SMan.getSetting( 201 ) );
-		if( aWord.getSpell() != null ){
-			exitingDB.add( word );
-			englishWords.add( aWord );
-			return aWord;
-		}
-		return null;
+			return helper.ALstr2str( def );
+		}else return null;
 	}
 
 	/*||----------------------------------------------------------------------------------------------
@@ -100,7 +104,7 @@ public class dictDB {
 		//
 		updateBut= inp;
 		inp.addSeconMsg( "loading all word..." );
-		updateDB= new ArrayList <>();
+		updateDB= new BArray <>();
 		Scanner rdr;
 		Scanner rdr1;
 		String line;
@@ -118,8 +122,8 @@ public class dictDB {
 					rdr1= new Scanner( helper.clearNonAlpha( line ).toLowerCase() );
 					while( rdr1.hasNext() ){
 						word= rdr1.next();
-						//if( !exitingDB.contains( word ))
-						updateDB.add( word );
+						if( !updateDB.contain( word ) )
+							updateDB.add( word );
 					}
 					rdr1.close();
 				}
@@ -153,31 +157,36 @@ public class dictDB {
 		if( !dictMp3.exists() ){
 			dictMp3.mkdirs();
 		}
-		File dictBadMp3= new File( SMan.getSetting( 0 ) + SMan.getSetting( 203 ) );
-		if( !dictBadMp3.exists() ){
-			dictBadMp3.mkdirs();
+	}
+
+	/*||----------------------------------------------------------------------------------------------
+	 ||| insert a local file into sql db.
+	||||--------------------------------------------------------------------------------------------*/
+	public static synchronized void insert2SQL( String path ) {
+		if( path == null || ! ( new File( path ).exists() ) )
+			return;
+		ArrayList <String> cont= helper.readFile( path );
+		if( cont == null )
+			return;
+		if( sqlName == null ){
+			sqlName= new ArrayList <>();
+			sqlName.add( "functional" );
+			sqlName.add( "keyword" );
+			sqlName.add( "content" );
 		}
-		File dictTxt= new File( SMan.getSetting( 0 ) + SMan.getSetting( 202 ) );
-		if( !dictTxt.exists() ){
-			dictTxt.mkdirs();
-		}
-		File dictBadTxt= new File( SMan.getSetting( 0 ) + SMan.getSetting( 204 ) );
-		if( !dictBadTxt.exists() ){
-			dictBadTxt.mkdirs();
-		}
-		// load db with multi loader.
-		ArrayList <String> wordT;
-		ArrayList <String> words= helper.getDirFile(
-				SMan.getSetting( 0 ) + SMan.getSetting( 202 ), "txt" );
-		int loaderInd= 1;
-		while( words.size() > 5900 ){
-			wordT= new ArrayList <>();
-			for( int i= 0; i < 5900; i++ ){
-				wordT.add( words.get( 0 ) );
-				words.remove( 0 );
-			}
-			dictDB_Loader loader= new dictDB_Loader( exitingDB, englishWords, wordT, loaderInd++ );
-		}
+		//
+		ArrayList <String> sqlVal= new ArrayList <>();
+		sqlVal.add( sqlfuncName );
+		sqlVal.add( helper.getFileName( helper.getFilePathName( path ) ) );
+		sqlVal.add( helper.ALstr2str( cont ) );
+		//
+		if( mySQLportal.insert( sqlName, sqlVal ) ){
+			( new File( path ) ).delete();
+			display.println( "dictionary.dictDB", "good insert: " + sqlVal.get( 1 ) );
+			try{
+				Thread.sleep( 5 );
+			}catch ( InterruptedException e ){}
+		}else display.println( "dictionary.dictDB", "bad insert: " + path );
 	}
 
 	/*||----------------------------------------------------------------------------------------------
@@ -199,33 +208,5 @@ public class dictDB {
 		String res= updateDB.get( 0 );
 		updateDB.remove( 0 );
 		return res;
-	}
-}
-
-/*||----------------------------------------------------------------------------------------------
- ||| a sub class to load the dict DB on its own thread.
-||||--------------------------------------------------------------------------------------------*/
-class dictDB_Loader implements Runnable {
-	ArrayList <String>	db		= null;
-	ArrayList <WordEng>	dbE		= null;
-	ArrayList <String>	words	= null;
-
-	public dictDB_Loader( ArrayList <String> db, ArrayList <WordEng> dbE, ArrayList <String> words, int ind ) {
-		this.db= db;
-		this.dbE= dbE;
-		this.words= words;
-		Thread tt= new Thread( this, "Dict DB loader_#" + ind );
-		tt.start();
-	}
-
-	@Override
-	public void run() {
-		display.println( this.getClass().toString(), "Starts to load Dict DB." );
-		int count= 0;
-		for( String words : words ){
-			File spath= new File( words );
-			db.add( helper.getFileName( spath.getName() ) );
-		}
-		display.println( this.getClass().toString(), "Dict DB loading finished, total: " + db.size() + " words." );
 	}
 }

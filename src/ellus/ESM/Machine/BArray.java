@@ -39,8 +39,16 @@ public class BArray <E extends Comparable> {
 		return;
 	}
 
+	public int size() {
+		return list.size();
+	}
+
 	public boolean remove( E obj ) {
 		return this.removeI( obj );
+	}
+
+	public boolean contain( E obj ) {
+		return this.containI( obj );
 	}
 
 	public void printAll() {
@@ -142,6 +150,49 @@ public class BArray <E extends Comparable> {
 			}
 			if( list.get( sInd ).compareTo( obj ) == 0 ){
 				list.remove( sInd );
+				return true;
+			}
+			return false;
+		}
+	}
+
+	private boolean containI( E obj ) {
+		if( list.size() == 0 ){
+			return false;
+		}else if( list.size() == 1 ){
+			if( list.get( 0 ).compareTo( obj ) == 0 ){
+				return true;
+			}else return false;
+		}else{
+			int sInd= 0;
+			int eInd= list.size() - 1;
+			//
+			while( ( eInd - sInd ) != 1 ){
+				if( ( eInd - sInd ) % 2 == 0 ){
+					if( list.get( ( eInd - sInd ) / 2 + sInd ).compareTo( obj ) > 0 ){
+						eInd= ( eInd - sInd ) / 2 + sInd;
+					}else if( list.get( ( eInd - sInd ) / 2 + sInd ).compareTo( obj ) == 0 ){
+						list.remove( list.get( ( eInd - sInd ) / 2 + sInd ) );
+						return true;
+					}else{
+						sInd= ( eInd - sInd ) / 2 + sInd;
+					}
+				}else{
+					if( list.get( eInd ).compareTo( obj ) > 0 ){
+						eInd-- ;
+					}else if( list.get( eInd ).compareTo( obj ) == 0 ){
+						return true;
+					}else if( list.get( eInd ).compareTo( obj ) < 0 ){
+						return false;
+					}
+				}
+				//System.out.println( "inwhile " + sInd + " " + eInd );
+			}
+			//
+			if( list.get( eInd ).compareTo( obj ) == 0 ){
+				return true;
+			}
+			if( list.get( sInd ).compareTo( obj ) == 0 ){
 				return true;
 			}
 			return false;

@@ -37,14 +37,14 @@ public class ESMW {
 	// background panel  ( JPanel has higher FPS than JFXPanel.!!!!!! )
 	protected ESMPanel				bgPanel			= null;
 	protected ArrayList <ESMPanel>	subPanels		= new ArrayList <>();
-	protected int top= 2;
+	protected int					top				= 2;
 	// some additional stat.
 	private boolean					undecorated		= true;
 	private boolean					fullScreen		= true;
 	private boolean					autoClose		= false;
 	private int						autoCloseTime	= 0;
 	// fps counter.
-	private int						renderWaitTime	= 10;																				// so dont init stall.
+	private int						renderWaitTime	= 10;																																								// so dont init stall.
 	private int						fps;
 	private long					fpsTestLast		= helper.getTimeLong();
 	protected int					fpsMax, fpsMin;
@@ -118,14 +118,14 @@ public class ESMW {
 		JLayeredPane JL= frame.getLayeredPane();
 		Component[] LP= JL.getComponents();
 		for( int i= 0; i < LP.length; i++ ){
-			if( comp == LP[i] ) { 
+			if( comp == LP[i] ){
 				JL.remove( LP[i] );
-				JL.add(  comp, new Integer( (++top) ) );
+				JL.add( comp, new Integer( ( ++top ) ) );
 				break;
 			}
 		}
 	}
-	
+
 	protected void hideAllSubPanel() {
 		JLayeredPane JL= frame.getLayeredPane();
 		Component[] LP= JL.getComponents();
@@ -162,8 +162,14 @@ public class ESMW {
 	 |||
 	||||--------------------------------------------------------------------------------------------*/
 	public void miniFrame() {
-		UseLogger.log( name + " - miniBoard()" );
+		UseLogger.log( name + " - miniFrame()" );
 		frame.setExtendedState( Frame.ICONIFIED );
+	}
+
+	public void maxFrame() {
+		UseLogger.log( name + " - maxFrame()" );
+		frame.setExtendedState( Frame.MAXIMIZED_BOTH );
+		frame.toFront();
 	}
 
 	/*||----------------------------------------------------------------------------------------------

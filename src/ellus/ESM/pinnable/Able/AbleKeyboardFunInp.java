@@ -1,4 +1,4 @@
-package ellus.ESM.pinnable.able_Interface;
+package ellus.ESM.pinnable.Able;
 
 public interface AbleKeyboardFunInp {
 	public void FunInp( String inp );

@@ -1,4 +1,4 @@
-package ellus.ESM.pinnable.able_Interface;
+package ellus.ESM.pinnable.Able;
 
 public interface AbleClickR {
 	public void B3clickAction( int x, int y );

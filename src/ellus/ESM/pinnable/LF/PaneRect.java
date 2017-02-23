@@ -8,19 +8,25 @@ import java.awt.Paint;
 ||||--------------------------------------------------------------------------------------------*/
 import ellus.ESM.ESMW.ESMPD;
 import ellus.ESM.ESMW.ESMPS;
+import ellus.ESM.Machine.helper;
 import ellus.ESM.pinnable.pinLF;
-import ellus.ESM.pinnable.able_Interface.AbleSMXConfig;
+import ellus.ESM.pinnable.Able.AbleClick;
+import ellus.ESM.pinnable.Able.AbleHoverHighlight;
+import ellus.ESM.pinnable.Able.AbleSMXConfig;
 import ellus.ESM.setting.SManXAttr;
 import ellus.ESM.setting.SManXAttr.AttrType;
 import ellus.ESM.setting.SManXElm;
 
 
 
-public class PaneRect extends pinLF implements AbleSMXConfig {
+public class PaneRect extends pinLF implements AbleSMXConfig, AbleHoverHighlight, AbleClick {
 	// for content list, first must be at top, last must be at bottom.
 	private Color		bg1C, bg2C;
 	private SManXElm	inp;
 	private Paint		gp;
+	private boolean		isHover			= false;
+	private long		HoverTime		= 0;
+	private int			HoverTimeThres	= Integer.MAX_VALUE;
 
 	public PaneRect( SManXElm inp ) {
 		this.inp= inp;
@@ -39,6 +45,9 @@ public class PaneRect extends pinLF implements AbleSMXConfig {
 						inp.getAttr( AttrType._int, "Height" ).getInteger() );
 		this.bg1C= inp.getAttr( SManXAttr.AttrType._color, "BackgroundColor1" ).getColor();
 		this.bg2C= inp.getAttr( SManXAttr.AttrType._color, "BackgroundColor2" ).getColor();
+		this.HoverTimeThres= inp.getAttr( AttrType._int, "HoverTimeThres" ).getInteger();
+		if( HoverTimeThres < 0 )
+			HoverTimeThres= Integer.MAX_VALUE;
 		gp= new GradientPaint(
 				inp.getAttr( AttrType._location, "Paint1Location" ).getLocation().getX(),
 				inp.getAttr( AttrType._location, "Paint1Location" ).getLocation().getY(),
@@ -55,4 +64,26 @@ public class PaneRect extends pinLF implements AbleSMXConfig {
 		ES.addGUIactiveLF( this );
 		g.fillRect( super.xmin, super.ymin, super.getWidth(), super.getHeight(), gp );
 	}
+
+	@Override
+	public void HoverHighlightOn() {
+		if( !isHover ){
+			HoverTime= helper.getTimeLong();
+		}else{
+			if( ( helper.getTimeLong() - HoverTime ) > HoverTimeThres ){
+				B1clickAction( 0, 0 );
+				HoverTime= helper.getTimeLong();
+			}
+		}
+		isHover= true;
+	}
+
+	@Override
+	public void HoverHighlightOff() {
+		isHover= false;
+		HoverTime= 0;
+	}
+
+	@Override
+	public void B1clickAction( int x, int y ) {}
 }

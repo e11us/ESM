@@ -1,4 +1,4 @@
-package ellus.ESM.pinnable.able_Interface;
+package ellus.ESM.pinnable.Able;
 
 import ellus.ESM.Machine.cor2D;
 import ellus.ESM.pinnable.pinnable;

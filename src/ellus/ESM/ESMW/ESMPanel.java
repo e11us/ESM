@@ -28,21 +28,19 @@ import javax.swing.KeyStroke;
 import javax.swing.event.MouseInputAdapter;
 import ellus.ESM.Machine.cor2D;
 import ellus.ESM.Machine.display;
-import ellus.ESM.Machine.f;
 import ellus.ESM.Machine.helper;
 import ellus.ESM.pinnable.pinnable;
-import ellus.ESM.pinnable.able_Interface.AbleClick;
-import ellus.ESM.pinnable.able_Interface.AbleClickHighlight;
-import ellus.ESM.pinnable.able_Interface.AbleClickR;
-import ellus.ESM.pinnable.able_Interface.AbleDoubleClick;
-import ellus.ESM.pinnable.able_Interface.AbleHoverHighlight;
-import ellus.ESM.pinnable.able_Interface.AbleKeyboardFunInp;
-import ellus.ESM.pinnable.able_Interface.AbleKeyboardInput;
-import ellus.ESM.pinnable.able_Interface.AbleMouseDrag;
-import ellus.ESM.pinnable.able_Interface.AbleMouseWheel;
-import ellus.ESM.pinnable.able_Interface.AblePanelTitle;
+import ellus.ESM.pinnable.Able.AbleClick;
+import ellus.ESM.pinnable.Able.AbleClickHighlight;
+import ellus.ESM.pinnable.Able.AbleClickR;
+import ellus.ESM.pinnable.Able.AbleDoubleClick;
+import ellus.ESM.pinnable.Able.AbleHoverHighlight;
+import ellus.ESM.pinnable.Able.AbleKeyboardFunInp;
+import ellus.ESM.pinnable.Able.AbleKeyboardInput;
+import ellus.ESM.pinnable.Able.AbleMouseDrag;
+import ellus.ESM.pinnable.Able.AbleMouseWheel;
+import ellus.ESM.pinnable.Able.AblePanelTitle;
 import ellus.ESM.setting.SMan;
-import ellus.ESM.setting.SManXAttr.AttrType;
 import ellus.ESM.setting.SManXElm;
 
 
@@ -60,7 +58,7 @@ public class ESMPanel extends JPanel {
 	protected ESMPS				PS			= null;
 	protected ESMPD				drawer		= null;
 	protected pinnable			highlighted	= null;
-	protected pinnable 			titlePin= null;
+	protected pinnable			titlePin	= null;
 	// draw this panel. ( change location. )
 	protected boolean			dragPanelOn	= false;
 	protected int				dragPanelOSX= 0;
@@ -69,7 +67,7 @@ public class ESMPanel extends JPanel {
 	protected SManXElm			masterSE	= null;
 	// others// print PL?
 	protected boolean			paintPL		= true;
-	protected ESMW frame= null;
+	protected ESMW				frame		= null;
 
 	/*||----------------------------------------------------------------------------------------------
 	 |||
@@ -102,21 +100,31 @@ public class ESMPanel extends JPanel {
 	/*||----------------------------------------------------------------------------------------------
 	 |||
 	||||--------------------------------------------------------------------------------------------*/
+	@Override
 	public void resize( int x, int y ) {
 		super.setBounds( PS.PanelX, PS.PanelY, x, y );
 		PS.PanelH= y;
 		PS.PanelW= x;
 	}
-	
+
 	/*||----------------------------------------------------------------------------------------------
 	 |||
 	||||--------------------------------------------------------------------------------------------*/
 	public void bring2Top() {
-		if( frame != null ) {
+		if( frame != null ){
 			frame.bringMe2Top( this );
 		}
 	}
-	
+
+	/*||----------------------------------------------------------------------------------------------
+	 |||
+	||||--------------------------------------------------------------------------------------------*/
+	protected void moveTo( int x, int y ) {
+		super.setBounds( x, y, PS.PanelW, PS.PanelH );
+		PS.PanelX= x;
+		PS.PanelY= y;
+	}
+
 	/*||----------------------------------------------------------------------------------------------
 	 |||
 	||||--------------------------------------------------------------------------------------------*/
@@ -168,7 +176,7 @@ public class ESMPanel extends JPanel {
 				PS.lastMouseInputTime= helper.getTimeLong();
 				if( PS.MsgOutputTest )
 					display.println( this.getClass().toString(), PS.name + " is focused" );
-				 // request focus to the window upon mouse enter. && bring to top.
+				// request focus to the window upon mouse enter. && bring to top.
 				panel.requestFocus();
 				bring2Top();
 				//
@@ -196,16 +204,16 @@ public class ESMPanel extends JPanel {
 			@Override
 			public void mousePressed( MouseEvent e ) {
 				PS.lastMouseInputTime= helper.getTimeLong();
-					switch( e.getButton() ){
-						case 1 :
-							if( !windowDrag( e ) ){
-								CheckB1Press( e );
-							}
-							break;
-						case 3 :
-							CheckB3Press( e );
-							break;
-					}
+				switch( e.getButton() ){
+					case 1 :
+						if( !windowDrag( e ) ){
+							CheckB1Press( e );
+						}
+						break;
+					case 3 :
+						CheckB3Press( e );
+						break;
+				}
 			}
 
 			@Override
@@ -244,7 +252,7 @@ public class ESMPanel extends JPanel {
 
 			@Override
 			public void mouseDragged( MouseEvent e ) {
-				 // request focus to the window upon mouse enter. && bring to top.
+				// request focus to the window upon mouse enter. && bring to top.
 				panel.requestFocus();
 				bring2Top();
 				//
@@ -624,7 +632,11 @@ public class ESMPanel extends JPanel {
 		checkB2PressNGE( e );
 	}
 
-	protected void checkB2PressNGE( MouseWheelEvent e ) {}
+	protected void checkB2PressNGE( MouseWheelEvent e ) {
+		if( PS.mousewheelNavEnable ){
+			PS.changeViewCenterP( 0, e.getWheelRotation() * PS.mouseWheelNavSpeed );
+		}
+	}
 
 	protected synchronized void CheckB1Press( MouseEvent e ) {
 		PS.MouseB1PressX= e.getX();
@@ -850,16 +862,15 @@ public class ESMPanel extends JPanel {
 			return true;
 		}else return false;
 	}
-	
+
 	protected void windowTitleInput( int x, int y ) {
-		if( titlePin != null && titlePin instanceof  AblePanelTitle ) {
+		if( titlePin != null && titlePin instanceof AblePanelTitle ){
 			if( ( (AblePanelTitle)titlePin ).isCloseClicked( x, y ) ){
 				closePanel();
 			}
 		}
 	}
 
-	// should always be overridden.
 	protected synchronized void KeyboardInp( String lk ) {
 		/*
 		f.f( "--KE hl: " + highlighted );

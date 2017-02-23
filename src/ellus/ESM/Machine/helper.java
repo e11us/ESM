@@ -28,9 +28,9 @@ import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
-import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import ellus.ESM.roboSys.DeskTop;
 import ellus.ESM.setting.SCon;
 
 
@@ -82,22 +82,22 @@ public class helper {
 	public static String getCurrentDate() {
 		LocalDate date= LocalDate.now();
 		DateTimeFormatter fmt= DateTimeFormat.forPattern( "yyyyMMdd" );
-		return  date.toString( fmt );
+		return date.toString( fmt );
 	}
-	
+
 	public static String getCurrentTime() {
 		SimpleDateFormat sdfDate= new SimpleDateFormat( "HHmmss" );
 		Date now= new Date();
 		String strDate= sdfDate.format( now );
 		return strDate;
 	}
-	
+
 	public static String getCurrentTimeMS() {
 		DateTime dt= new DateTime();
 		DateTimeFormatter fmt2= DateTimeFormat.forPattern( "SSSS" );
-		return   dt.toString( fmt2 );
+		return dt.toString( fmt2 );
 	}
-	
+
 	/*||----------------------------------------------------------------------------------------------
 	 ||| return current time and date.
 	||||--------------------------------------------------------------------------------------------*/
@@ -695,17 +695,17 @@ public class helper {
 		}
 		return tmp;
 	}
-	
+
 	/* --------------------------------------------------------------------------
 	 * --- return a random alphanumerical string of length 32.
 	 * ------------------
 	 * ----------------------------------------------------------- */
 	public static String rand32AN() {
-		String ret= "";
+		StringBuilder ret= new StringBuilder( "" );
 		for( int i= 0; i < 32; i++ ){
-			ret+= randAlphNum() + "";
+			ret.append( randAlphNum() );
 		}
-		return ret;
+		return ret.toString();
 	}
 
 	/* --------------------------------------------------------------------------
@@ -713,11 +713,11 @@ public class helper {
 	 * ------------------
 	 * ----------------------------------------------------------- */
 	public static String rand40AN() {
-		String ret= "";
+		StringBuilder ret= new StringBuilder( "" );
 		for( int i= 0; i < 40; i++ ){
-			ret+= randAlphNum() + "";
+			ret.append( randAlphNum() );
 		}
-		return ret;
+		return ret.toString();
 	}
 
 	/* --------------------------------------------------------------------------
@@ -727,11 +727,11 @@ public class helper {
 	public static String randAN( int itor ) {
 		if( itor <= 0 )
 			return "";
-		char[] res= new char[itor];
+		StringBuilder ret= new StringBuilder( "" );
 		for( int i= 0; i < itor; i++ ){
-			res[i]= randAlphNum();
+			ret.append( randAlphNum() );
 		}
-		return res.toString();
+		return ret.toString();
 	}
 
 	/* --------------------------------------------------------------------------
@@ -971,6 +971,36 @@ public class helper {
 		File[] listOfFiles= folder.listFiles();
 		ArrayList <String> res= new ArrayList <>();
 		if( ext.length == 0 ){
+			for( int i= 0; i < listOfFiles.length; i++ ){
+				if( listOfFiles[i].isFile() )
+					res.add( listOfFiles[i].toString() );
+			}
+			return res;
+		}else{
+			for( int i= 0; i < listOfFiles.length; i++ ){
+				for( String tmp : ext ){
+					if( listOfFiles[i].isFile()
+							&& getFileExt( listOfFiles[i].toString() ).toLowerCase().equals( tmp.toLowerCase() ) ){
+						res.add( listOfFiles[i].toString() );
+						break;
+					}
+				}
+			}
+			return res;
+		}
+	}
+
+	/*||----------------------------------------------------------------------------------------------
+	 ||| get dir file from given path with all the given ext.
+	|||| ex: "./home", "txt" will get all txt in home. returning is complete path.
+	||||--------------------------------------------------------------------------------------------*/
+	public static ArrayList <String> getDirFile( String spath, ArrayList <String> ext ) {
+		if( spath == null || ext == null )
+			return null;
+		File folder= new File( spath );
+		File[] listOfFiles= folder.listFiles();
+		ArrayList <String> res= new ArrayList <>();
+		if( ext.size() == 0 ){
 			for( int i= 0; i < listOfFiles.length; i++ ){
 				if( listOfFiles[i].isFile() )
 					res.add( listOfFiles[i].toString() );
@@ -1371,26 +1401,25 @@ public class helper {
 		}
 		return month;
 	}
-	
 
 	public static String getWeekDayName( int num ) {
-		switch( num ) {
-			case 1:
+		switch( num ){
+			case 1 :
 				return "Monday";
-			case 2:
+			case 2 :
 				return "Tuesday";
-			case 3:
+			case 3 :
 				return "Wednesday";
-			case 4:
+			case 4 :
 				return "Thusday";
-			case 5:
+			case 5 :
 				return "Friday";
-			case 6:
+			case 6 :
 				return "Saturday";
-			case 7:
+			case 7 :
 				return "Sunday";
-			default:
-					return null;
+			default :
+				return null;
 		}
 	}
 
@@ -1620,6 +1649,22 @@ public class helper {
 		}
 	}
 
+	public static void writeFile( String path, boolean OverRideExist, String cont ) {
+		if( path == null || cont == null || cont.length() == 0 )
+			return;
+		File spath= new File( path );
+		if( !spath.exists() || OverRideExist ){
+			spath.getParentFile().mkdirs();
+			try{
+				PrintWriter pw= new PrintWriter( path );
+				pw.println( cont );
+				pw.close();
+			}catch ( FileNotFoundException e ){
+				e.printStackTrace();
+			}
+		}
+	}
+
 	public static void createFile( String path ) {
 		File st= new File( path );
 		if( !st.exists() ){
@@ -1628,13 +1673,13 @@ public class helper {
 			}catch ( IOException e ){}
 		}
 	}
-	
-	public static ArrayList<String> str2ALstr( String inp ){
-		ArrayList<String> ret= new ArrayList<>();
+
+	public static ArrayList <String> str2ALstr( String inp ) {
+		ArrayList <String> ret= new ArrayList <>();
 		if( inp == null || inp.length() == 0 )
 			return ret;
-		while( inp.indexOf( '\n' ) != -1 ) {
-			if( inp.indexOf( '\n' ) == inp.length() - 1 ) {
+		while( inp.indexOf( '\n' ) != -1 ){
+			if( inp.indexOf( '\n' ) == inp.length() - 1 ){
 				inp= inp.substring( 0, inp.indexOf( '\n' ) );
 				break;
 			}
@@ -1644,27 +1689,37 @@ public class helper {
 		ret.add( inp );
 		return ret;
 	}
-	
-	public static String ALstr2str( ArrayList<String> inp ) {
-		String ret= null;
-		for( String tmp : inp ) {
+
+	public static String ALstr2str( ArrayList <String> inp ) {
+		StringBuilder ret= null;
+		for( String tmp : inp ){
 			if( ret == null )
-				ret= tmp;
-			else
-				ret+= "\n" + tmp;
+				ret= new StringBuilder( tmp );
+			else ret.append( "\n" + tmp );
 		}
-		return ret;
+		return ret.toString();
 	}
 
 	public static boolean AllEmptySpace( String string ) {
 		if( string == null )
 			return true;
-		for( int i= 0; i < string.length(); i++ ) {
-			if( string.charAt( i ) != ' ' && string.charAt( i ) != '\n' &&  
+		for( int i= 0; i < string.length(); i++ ){
+			if( string.charAt( i ) != ' ' && string.charAt( i ) != '\n' &&
 					string.charAt( i ) != '\t' )
 				return false;
 		}
 		return true;
+	}
+
+	public static void openFolderWithWindows( String tmp2 ) {
+		if( tmp2 == null )
+			return;
+		try{
+			DeskTop.getDeskTop().open( new File( tmp2 ) );
+		}catch ( IOException e ){
+			e.printStackTrace();
+			return;
+		}
 	}
 }
 //

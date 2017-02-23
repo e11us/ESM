@@ -82,6 +82,15 @@ public class ESMPD {
 		g2.drawLine( i1, j1, i2, j2 );
 	}
 
+	public void drawLineRJ( int i1, int j1, int i2, int j2, int thic, Color C ) {
+		if( thic == 0 )
+			return;
+		refreshG();
+		g2.setColor( C );
+		g2.setStroke( new BasicStroke( thic, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
+		g2.drawLine( i1, j1, i2, j2 );
+	}
+
 	public void drawPolygon( Polygon pg, int thic, Color C ) {
 		refreshG();
 		g2.setColor( C );

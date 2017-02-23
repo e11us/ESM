@@ -11,16 +11,14 @@ import ellus.ESM.Machine.cor2D;
 import ellus.ESM.Machine.f;
 import ellus.ESM.Machine.helper;
 import ellus.ESM.pinnable.pinLF;
-import ellus.ESM.pinnable.able_Interface.AbleClick;
-import ellus.ESM.pinnable.able_Interface.AbleClickHighlight;
-import ellus.ESM.pinnable.able_Interface.AbleClickR;
-import ellus.ESM.pinnable.able_Interface.AbleDoubleClick;
-import ellus.ESM.pinnable.able_Interface.AbleHoverHighlight;
-import ellus.ESM.pinnable.able_Interface.AbleKeyboardFunInp;
-import ellus.ESM.pinnable.able_Interface.AbleKeyboardInput;
-import ellus.ESM.pinnable.able_Interface.AbleMouseDrag;
-import ellus.ESM.pinnable.able_Interface.AbleMouseWheel;
-import ellus.ESM.pinnable.able_Interface.AbleSMXConfig;
+import ellus.ESM.pinnable.Able.AbleClick;
+import ellus.ESM.pinnable.Able.AbleClickHighlight;
+import ellus.ESM.pinnable.Able.AbleClickR;
+import ellus.ESM.pinnable.Able.AbleDoubleClick;
+import ellus.ESM.pinnable.Able.AbleKeyboardFunInp;
+import ellus.ESM.pinnable.Able.AbleKeyboardInput;
+import ellus.ESM.pinnable.Able.AbleMouseWheel;
+import ellus.ESM.pinnable.Able.AbleSMXConfig;
 import ellus.ESM.roboSys.clipBoard;
 import ellus.ESM.setting.SCon;
 import ellus.ESM.setting.SManXAttr.AttrType;
@@ -30,11 +28,10 @@ import ellus.ESM.setting.SManXElm;
 
 /*
  * very similar to panel similar to PanelTextFieldPin. but dont cover whole screen, but rather its a pin.
- * support line wrap. ( wrap will only work when input english. )
  *
+ * support line wrap. ( wrap will only work when input english. )
  */
-public class PanelTextFieldPin extends pinLF implements AbleSMXConfig, AbleClickR,AbleClickHighlight, 
-AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput {
+public class PanelTextFieldPin extends pinLF implements AbleSMXConfig, AbleClickR, AbleClickHighlight, AbleClick, AbleMouseWheel, AbleDoubleClick, AbleKeyboardFunInp, AbleKeyboardInput {
 	private Color				bg1C, bg2C, edC, txC, curC;
 	private ArrayList <String>	tx;
 	private int					LineSep				= 5;
@@ -46,12 +43,13 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 	private int					fontI				= 4, fontS= 26;
 	private Font				font;
 	private SManXElm			elm;
-	private PanelTextFieldPin		handler				= this;
+	private PanelTextFieldPin	handler				= this;
 	private printOut			PO					= new printOut();
-	private cursor CS= new cursor();
+	private cursor				CS					= new cursor();
 	private int[]				charWidth			= null;
-	private aLine				head				= null, tail;
-	private boolean stopPrint= false;
+	private aLine				head				= null;
+	private boolean				stopPrint			= false;
+	protected boolean			readOnly			= false;
 
 	public PanelTextFieldPin( SManXElm elm, ArrayList <String> tx ) {
 		//int xo, int yo, int fontI, Color[] co, ArrayList <String> tx, Graphics g ) {//bg1C, bg2C, edC, txC;
@@ -66,9 +64,9 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 		super.setXY(
 				elm.getAttr( AttrType._location, "location" ).getLocation().getX(),
 				elm.getAttr( AttrType._location, "location" ).getLocation().getX() +
-				elm.getAttr( AttrType._int, "Width" ).getInteger(),
-						elm.getAttr( AttrType._location, "location" ).getLocation().getY(),
-						elm.getAttr( AttrType._location, "location" ).getLocation().getY() +
+						elm.getAttr( AttrType._int, "Width" ).getInteger(),
+				elm.getAttr( AttrType._location, "location" ).getLocation().getY(),
+				elm.getAttr( AttrType._location, "location" ).getLocation().getY() +
 						elm.getAttr( AttrType._int, "Height" ).getInteger() );
 		bg1C= elm.getAttr( AttrType._color, "BackgroundColor1" ).getColor();
 		bg2C= elm.getAttr( AttrType._color, "BackgroundColor2" ).getColor();
@@ -77,6 +75,10 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 		curC= elm.getAttr( AttrType._color, "CursorColor" ).getColor();
 		xo= elm.getAttr( AttrType._int, "ToEdgeDistanceX" ).getInteger();
 		yo= elm.getAttr( AttrType._int, "ToEdgeDistanceY" ).getInteger();
+		if( xo == 0 )
+			xo= 1;
+		if( yo == 0 )
+			yo= 1;
 		//
 		fontI= elm.getAttr( AttrType._int, "FontIndex" ).getInteger();
 		LineSep= elm.getAttr( AttrType._int, "LineSeperation" ).getInteger();
@@ -88,13 +90,16 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 		font= SCon.FontList.get( fontI ).deriveFont( (float)fontS );
 	}
 
+	public void readOnly() {
+		readOnly= true;
+	}
+
 	public String getTxt() {
 		StringBuilder res= null;
-		while( head != null ) {
+		while( head != null ){
 			if( res == null )
 				res= head.lines;
-			else
-				res.append( '\n' + head.lines.toString() );
+			else res.append( '\n' + head.lines.toString() );
 			head= head.post;
 		}
 		return res.toString();
@@ -107,9 +112,12 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 		setTx();
 		stopPrint= false;
 	}
-	
+
 	@Override
 	public void FunInp( String inp ) {
+		if( readOnly )
+			return;
+		//
 		if( ( tx ) == null )
 			return;
 		ArrayList <String> msg= tx;
@@ -155,6 +163,8 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 
 	@Override
 	public void keyboardInp( String code ) {
+		if( readOnly )
+			return;
 		//
 		if( code.length() == 1 ){
 			if( code.charAt( 0 ) >= 32 && code.charAt( 0 ) <= 126 ){
@@ -171,7 +181,7 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 	@Override
 	public void paint( ESMPD g, ESMPS pan ) {
 		//
-		if( stopPrint )
+		if( stopPrint || LineSep == 0 )
 			return;
 		// add to non LF instead so it can consume all the input.
 		pan.addGUIactive( this );
@@ -191,43 +201,47 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 				super.getWidth(), super.getHeight(), 1, edC );
 		//
 		// draw the strings.
-		ArrayList <String> curLine= PO.print( g, (int) ( super.getWidth() - xo*2.4 ) );
-		//f.f( "-------------------------------------" + curLine.size() + " " );
+		ArrayList <String> curLine= PO.print( g, (int) ( super.getWidth() - xo * 2.4 ) );
 		for( int i= 0; i < curLine.size(); i++ ){
 			g.drawString( curLine.get( i ), pan.w2bX( super.getXmin() ) + xo,
-					pan.w2bY( super.getYmin() ) + yo + ( LineSep + fontS ) * ( i + 1 ), 
+					pan.w2bY( super.getYmin() ) + yo + ( LineSep + fontS ) * ( i + 1 ),
 					txC, font );
 		}
+		//
 		// draw cursor.
-		if( inpModeCurBlinkCount++ == inpModeCurBlinkThre ){
-			inpModeCurBlinkCount= 0;
-			inpModeCurblinkShow= !inpModeCurblinkShow;
-		}
-		if( inpModeCurblinkShow ) {
-			cor2D curLoc= CS.getCurPosition( g, font );
-			if( curLoc == null ) return ;
-			g.drawLine( pan.w2bX( super.getXmin() ) + xo + curLoc.getX(),
-					pan.w2bY( super.getYmin() ) + yo  + ( LineSep + fontS ) * ( curLoc.getY()  + 1 ),
-					pan.w2bX( super.getXmin() ) + xo  + curLoc.getX(),
-					(int) ( pan.w2bY( super.getYmin() ) + ( LineSep + fontS ) * ( curLoc.getY() )
-							+ yo + fontS*0.19  ), 3, curC );	
+		if( !readOnly ){
+			if( inpModeCurBlinkCount++ == inpModeCurBlinkThre ){
+				inpModeCurBlinkCount= 0;
+				inpModeCurblinkShow= !inpModeCurblinkShow;
+			}
+			if( inpModeCurblinkShow ){
+				cor2D curLoc= CS.getCurPosition( g, font );
+				if( curLoc == null )
+					return;
+				g.drawLine( pan.w2bX( super.getXmin() ) + xo + curLoc.getX(),
+						pan.w2bY( super.getYmin() ) + yo + ( LineSep + fontS ) * ( curLoc.getY() + 1 ),
+						pan.w2bX( super.getXmin() ) + xo + curLoc.getX(),
+						(int) ( pan.w2bY( super.getYmin() ) + ( LineSep + fontS ) * ( curLoc.getY() )
+								+ yo + fontS * 0.19 ),
+						3, curC );
+			}
 		}
 	}
 
 	/*||----------------------------------------------------------------------------------------------
-	 ||| 
+	 |||
 	||||--------------------------------------------------------------------------------------------*/
 	class printOut {
-		aLine				head	= handler.head;
-		int					headInd	= 0;
+		aLine				head		= handler.head;
+		int					headInd		= 0;
 		ArrayList <String>	lines;
 		ArrayList <aLine>	linT;
 		ArrayList <Integer>	linTInd;
 		//
-		int lineTot;
-		aLine current= null;
-		int currentInd= 0;
-		
+		int					lineTot;
+		aLine				current		= null;
+		int					currentInd	= 0;
+
 		void reset() {
 			head= null;
 			headInd= 0;
@@ -243,31 +257,30 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 			current= head;
 			boolean first= true;
 			//
-			lineTot= ( handler.getHeight() - yo * 2  ) / ( LineSep + fontS );
+			lineTot= ( handler.getHeight() - yo * 2 ) / ( LineSep + fontS );
 			while( lines.size() < lineTot ){
 				if( current == null )
 					return lines;
 				//
 				linTInd.add( new Integer( lines.size() ) );
-				if( first ) {
+				if( first ){
 					lines.addAll( current.get( headInd, wid ) );
-					first = false;
-				}else
-					lines.addAll( current.get( 0, wid ) );
+					first= false;
+				}else lines.addAll( current.get( 0, wid ) );
 				linT.add( current );
 				//
 				current= current.post;
 			}
-			while( lines.size() > lineTot ) {
-				lines.remove( lines.size()-1 );
+			while( lines.size() > lineTot ){
+				lines.remove( lines.size() - 1 );
 			}
 			return lines;
 		}
 
 		void lookUp() {
 			if( headInd > 0 )
-				headInd --;
-			else if( head.pre != null ) {
+				headInd-- ;
+			else if( head.pre != null && head.pre.linePO != null ){
 				head= head.pre;
 				headInd= -1;
 			}
@@ -275,80 +288,76 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 
 		void lookDown() {
 			if( head.hasNextInd( headInd ) )
-				headInd++;
-			else {
-				if( head.post != null ) {
+				headInd++ ;
+			else{
+				if( head.post != null ){
 					head= head.post;
 					headInd= 0;
 				}
 			}
-			
 			/*
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
+			 *
+			 *
+			 *
+			 *
+			 *
+			 *
+			 *
+			 *
+			 *
+			 *
+			 *
 			 * still need fix.
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
+			 *
+			 *
+			 *
+			 *
+			 *
+			 *
+			 *
+			 *
+			 *
+			 *
+			 *
+			 *
 			 */
-			
-
 		}
 	}
 
 	/*||----------------------------------------------------------------------------------------------
-	 ||| 
+	 |||
 	||||--------------------------------------------------------------------------------------------*/
-	class cursor{
-		int x= 0;
-		int yind= 0;
-		aLine curLinObj= null;
-		String curLine= null;
-		int totInx= 0;
-		
+	class cursor {
+		int		x			= 0;
+		int		yind		= 0;
+		aLine	curLinObj	= null;
+		String	curLine		= null;
+		int		totInx		= 0;
+
 		void reset() {
-			x=0;
+			x= 0;
 			yind= 0;
 			totInx= 0;
 			curLinObj= null;
 			curLine= null;
 		}
-		
-		cor2D getCurPosition( ESMPD g , Font ff ) {
-			try {
+
+		cor2D getCurPosition( ESMPD g, Font ff ) {
+			try{
 				curLine= curLinObj.get( yind );
-				if( PO.linT.contains( curLinObj ) ) {
+				if( PO.linT.contains( curLinObj ) ){
 					int y= PO.linTInd.get( PO.linT.indexOf( curLinObj ) ) + yind;
 					return new cor2D( g.getTxtWid( curLine.substring( 0, x ), ff ), y );
 				}
 				return null;
-			}catch( Exception ee ) {
+			}catch ( Exception ee ){
 				f.f( totInx + " " + x + " " + curLine.length() );
 				ee.printStackTrace();
 				System.exit( 11 );
 			}
 			return null;
 		}
-	
-		
+
 		void CV( String str ) {
 			str.replace( '\n', ' ' );
 			StringBuilder A= new StringBuilder( curLinObj.lines.toString().substring( 0, totInx ) );
@@ -360,78 +369,76 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 			totInx+= str.length() + 1;
 			int tot= totInx;
 			int y= 0;
-			while( true ) {
+			while( true ){
 				if( tot > curLinObj.linePO.get( y ).length() )
 					tot-= curLinObj.linePO.get( y++ ).length();
-				else {
+				else{
 					yind= y;
 					x= tot;
 					break;
 				}
 			}
-			
 		}
-		
+
 		void SD() {
 			x= 0;
 			totInx= x + curLinObj.getTotTil( yind );
 			if( curLinObj.lines.length() > totInx &&
-					curLinObj.lines.charAt( totInx ) == ' ' && x == 0) {
-				totInx++;
-				x++;
+					curLinObj.lines.charAt( totInx ) == ' ' && x == 0 ){
+				totInx++ ;
+				x++ ;
 			}
 		}
-		
+
 		void ED() {
 			x= curLinObj.linePO.get( yind ).length();
 			totInx= x + curLinObj.getTotTil( yind );
 		}
-		
+
 		void AU() {
-			if( yind > 0 ) {
-				yind--;
+			if( yind > 0 ){
+				yind-- ;
 				//
 				curLine= curLinObj.get( yind );
 				if( curLine.length() < x )
 					x= curLine.length();
 				totInx= x + curLinObj.getTotTil( yind );
-			}else if( curLinObj.pre != null ) {
+			}else if( curLinObj.pre != null ){
 				curLinObj= curLinObj.pre;
 				yind= curLinObj.linePO.size() - 1;
 				//
 				curLine= curLinObj.get( yind );
-				if( curLine.length() < x ) 
+				if( curLine.length() < x )
 					x= curLine.length();
 				totInx= x + curLinObj.getTotTil( yind );
 			}
 			if( curLinObj.lines.length() > totInx &&
-					curLinObj.lines.charAt( totInx ) == ' ' && x == 0) {
-				totInx++;
-				x++;
+					curLinObj.lines.charAt( totInx ) == ' ' && x == 0 ){
+				totInx++ ;
+				x++ ;
 			}
 		}
 
 		void AD() {
-			if( PO.linT.contains( curLinObj ) ) {
-				if( PO.linTInd.get( PO.linT.indexOf( curLinObj ) ) + yind + 2 >= PO.lineTot ) {
+			if( PO.linT.contains( curLinObj ) ){
+				if( PO.linTInd.get( PO.linT.indexOf( curLinObj ) ) + yind + 2 >= PO.lineTot ){
 					PO.lookDown();
 					return;
 				}
-			}else
-				return;
+			}else return;
 			//
-			if( curLinObj.hasNextInd( yind ) ) {
+			if( curLinObj.hasNextInd( yind ) ){
 				curLine= curLinObj.get( yind );
-				yind++;
-				if( totInx + curLine.length() > curLinObj.lines.length() ) {
+				yind++ ;
+				if( totInx + curLine.length() > curLinObj.lines.length() ){
 					x= curLinObj.get( yind ).length();
 					totInx= x + curLinObj.getTotTil( yind );
-				}else {
-					if( curLinObj.get( yind ).length() < x) 
+				}else{
+					if( curLinObj.get( yind ).length() < x )
 						x= curLinObj.get( yind ).length();
 					totInx= x + curLinObj.getTotTil( yind );
 				}
-			}else if( curLinObj.post != null ) {
+			}else if( curLinObj.post != null ){
 				curLinObj= curLinObj.post;
 				yind= 0;
 				if( x > curLinObj.get( yind ).length() )
@@ -439,69 +446,69 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 				totInx= x + curLinObj.getTotTil( yind );
 			}
 			if( curLinObj.lines.length() > totInx &&
-					curLinObj.lines.charAt( totInx ) == ' ' && x == 0) {
-				totInx++;
-				x++;
+					curLinObj.lines.charAt( totInx ) == ' ' && x == 0 ){
+				totInx++ ;
+				x++ ;
 			}
 		}
 
 		void AR() {
-			if( x > curLinObj.get( yind ).length() - 1 ) {
-				if(  curLinObj.hasNextInd( yind ) ) {
-					yind++;
+			if( x > curLinObj.get( yind ).length() - 1 ){
+				if( curLinObj.hasNextInd( yind ) ){
+					yind++ ;
 					x= 0;
-					if( curLinObj.lines.charAt( totInx ) == ' ' ) {
-						totInx++;
-						x++;
+					if( curLinObj.lines.charAt( totInx ) == ' ' ){
+						totInx++ ;
+						x++ ;
 					}
-				}else if( curLinObj.post != null ) {
+				}else if( curLinObj.post != null ){
 					curLinObj= curLinObj.post;
 					totInx= 0;
 					x= 0;
 					yind= 0;
 				}
-			}else {
-				x++;
-				totInx++;
+			}else{
+				x++ ;
+				totInx++ ;
 			}
 		}
 
 		void AL() {
-			if( ( x > 0 && yind == 0 ) || ( x > 1 && yind > 0 ) ) {
-				x--;
-				totInx--;
-			}else if( yind > 0 ) {
-				yind--;
+			if( ( x > 0 && yind == 0 ) || ( x > 1 && yind > 0 ) ){
+				x-- ;
+				totInx-- ;
+			}else if( yind > 0 ){
+				yind-- ;
 				x= curLinObj.get( yind ).length();
 				totInx= x + curLinObj.getTotTil( yind );
-			}else if( curLinObj.pre != null ) {
+			}else if( curLinObj.pre != null ){
 				curLinObj= curLinObj.pre;
 				yind= curLinObj.linePO.size() - 1;
 				x= curLinObj.get( yind ).length();
 				totInx= x + curLinObj.getTotTil( yind );
 			}
 		}
-		
+
 		void input( char c ) {
 			curLinObj.lines.insert( totInx, c );
 			curLinObj.linePO= wrapLine( curLinObj.lines.toString(), lastWid );
-			totInx++;
+			totInx++ ;
 			int tot= totInx;
 			int y= 0;
-			while( true ) {
+			while( true ){
 				if( tot > curLinObj.linePO.get( y ).length() )
 					tot-= curLinObj.linePO.get( y++ ).length();
-				else {
+				else{
 					yind= y;
 					x= tot;
 					break;
 				}
 			}
 		}
-		
-		 void nwl() {
+
+		void nwl() {
 			aLine nxt= new aLine();
-			nxt.lines=  new StringBuilder( curLinObj.lines.substring( totInx, curLinObj.lines.length() ) );
+			nxt.lines= new StringBuilder( curLinObj.lines.substring( totInx, curLinObj.lines.length() ) );
 			curLinObj.lines= new StringBuilder( curLinObj.lines.substring( 0, totInx ) );
 			nxt.post= curLinObj.post;
 			nxt.pre= curLinObj;
@@ -510,10 +517,10 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 			x= totInx= 0;
 			yind= 0;
 		}
-		
-		 void del() {
-			if( totInx == 0 ) {
-				if( curLinObj.pre != null ) {
+
+		void del() {
+			if( totInx == 0 ){
+				if( curLinObj.pre != null ){
 					totInx= curLinObj.pre.lines.length();
 					yind= curLinObj.pre.linePO.size() - 1;
 					x= curLinObj.pre.linePO.get( yind ).length();
@@ -525,18 +532,18 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 						curLinObj.post.pre= curLinObj.pre;
 					curLinObj= curLinObj.pre;
 				}
-			}else {
-				String A= curLinObj.lines.toString().substring( 0, totInx-1 );
+			}else{
+				String A= curLinObj.lines.toString().substring( 0, totInx - 1 );
 				String B= curLinObj.lines.toString().substring( totInx, curLinObj.lines.length() );
 				curLinObj.lines= new StringBuilder( A + B );
 				curLinObj.linePO= wrapLine( curLinObj.lines.toString(), lastWid );
 				//
 				int tot= --totInx;
 				int y= 0;
-				while( true ) {
+				while( true ){
 					if( tot > curLinObj.linePO.get( y ).length() )
 						tot-= curLinObj.linePO.get( y++ ).length();
-					else {
+					else{
 						yind= y;
 						x= tot;
 						break;
@@ -544,21 +551,21 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 				}
 			}
 		}
-		
-		void delR(){
-			if( totInx >= curLinObj.lines.length()  )
+
+		void delR() {
+			if( totInx >= curLinObj.lines.length() )
 				return;
 			String A= curLinObj.lines.toString().substring( 0, totInx );
-			String B= curLinObj.lines.toString().substring( totInx+1, curLinObj.lines.length() );
+			String B= curLinObj.lines.toString().substring( totInx + 1, curLinObj.lines.length() );
 			curLinObj.lines= new StringBuilder( A + B );
 			curLinObj.linePO= wrapLine( curLinObj.lines.toString(), lastWid );
 			//
 			int tot= totInx;
 			int y= 0;
-			while( true ) {
+			while( true ){
 				if( tot > curLinObj.linePO.get( y ).length() )
 					tot-= curLinObj.linePO.get( y++ ).length();
-				else {
+				else{
 					yind= y;
 					x= tot;
 					break;
@@ -566,7 +573,7 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 			}
 		}
 	}
-	
+
 	class aLine {
 		ArrayList <String>	linePO	= null;
 		StringBuilder		lines	= null;
@@ -582,53 +589,40 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 				ret.add( linePO.get( i ) );
 			return ret;
 		}
-		
+
 		String get( int ind ) {
 			if( ind > linePO.size() - 1 )
 				return null;
-			else 
-				return linePO.get( ind);
+			else return linePO.get( ind );
 		}
-		
+
 		boolean hasNextInd( int ind ) {
 			if( linePO == null )
 				return false;
-			if( ind + 1 > linePO.size()-1 )
+			if( ind + 1 > linePO.size() - 1 )
 				return false;
 			else return true;
 		}
-		
+
 		int getTotTil( int ind ) {
 			if( ind > linePO.size() - 1 )
 				ind= linePO.size() - 1;
 			int tot= 0;
-			for( int i= 0; i < ind; i++ ) {
-				tot+= linePO.get( i ).length(); 
+			for( int i= 0; i < ind; i++ ){
+				tot+= linePO.get( i ).length();
 			}
 			return tot;
 		}
-		
-		void AU() {
-			
-		}
-
-		void AD() {
-			
-		}
-
-		public void AR() {}
-
-		public void AL() {}
-		
 	}
 
 	private int lastWid= 0;
+
 	private ArrayList <String> wrapLine( String line, int wid ) {
 		lastWid= wid;
 		int tot= 0;
 		char cha;
 		int lastSpace= -1;
-		ArrayList <String> ret= new ArrayList <String>();
+		ArrayList <String> ret= new ArrayList <>();
 		boolean end= false;
 		//
 		while( !end ){
@@ -667,7 +661,7 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 			charWidth[i]= g.getTxtWid( "" + ( (char) ( i + 32 ) ), font );
 		}
 	}
-	
+
 	private void setTx() {
 		head= null;
 		aLine l;
@@ -683,7 +677,6 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 			}
 			last= l;
 		}
-		tail= last;
 		//
 		PO.reset();
 		CS.reset();
@@ -692,7 +685,7 @@ AbleClick, AbleMouseWheel, AbleDoubleClick,AbleKeyboardFunInp, AbleKeyboardInput
 	}
 
 	/*||----------------------------------------------------------------------------------------------
-	 ||| 
+	 |||
 	||||--------------------------------------------------------------------------------------------*/
 	@Override
 	public void WheelRotateAction( int rot ) {

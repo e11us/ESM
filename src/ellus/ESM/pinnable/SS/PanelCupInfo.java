@@ -7,9 +7,10 @@ import java.awt.Paint;
 import ellus.ESM.ESMW.ESMPD;
 import ellus.ESM.ESMW.ESMPS;
 import ellus.ESM.Machine.helper;
+import ellus.ESM.pinnable.pin2ScreenLocationer;
 import ellus.ESM.pinnable.pinSS;
-import ellus.ESM.pinnable.able_Interface.AbleHoverHighlight;
-import ellus.ESM.pinnable.able_Interface.AbleSMXConfig;
+import ellus.ESM.pinnable.Able.AbleHoverHighlight;
+import ellus.ESM.pinnable.Able.AbleSMXConfig;
 import ellus.ESM.roboSys.cpuInfo;
 import ellus.ESM.setting.SCon;
 import ellus.ESM.setting.SManXAttr.AttrType;
@@ -21,13 +22,14 @@ public class PanelCupInfo extends pinSS implements AbleHoverHighlight, AbleSMXCo
 	private double		useRate		= 0;
 	private int			fontI, fontS;
 	private long		lastRFtime	= helper.getTimeLong();
-	private int			barXOS		= 0;
 	private int			barYOS		= 0;
-	private int			frmXOS		= 0;
 	private Color		txC, br1C, br2C, edC;
 	private SManXElm	inp;
 	private int			refreshThres= 1000;
 	private Font		font		= null;
+	//
+	private boolean		centered	= false;
+	private int			x1, x2;
 
 	public PanelCupInfo( SManXElm inp ) {
 		// x,y,w,h, fontI, fontS, barXOS, barYOS, frameOSX | txC, br1C,br2C, edC;
@@ -48,9 +50,7 @@ public class PanelCupInfo extends pinSS implements AbleHoverHighlight, AbleSMXCo
 						inp.getAttr( AttrType._int, "Height" ).getInteger() );
 		fontI= inp.getAttr( AttrType._int, "FontIndex" ).getInteger();
 		fontS= inp.getAttr( AttrType._int, "FontSize" ).getInteger();
-		barXOS= inp.getAttr( AttrType._int, "CPUBarXOS" ).getInteger();
 		barYOS= inp.getAttr( AttrType._int, "CPUBarYOS" ).getInteger();
-		frmXOS= inp.getAttr( AttrType._int, "CPUFrameXOS" ).getInteger();
 		refreshThres= inp.getAttr( AttrType._int, "RefreshWait(ms)" ).getInteger();
 		//
 		this.txC= inp.getAttr( AttrType._color, "TextColor" ).getColor();
@@ -64,24 +64,43 @@ public class PanelCupInfo extends pinSS implements AbleHoverHighlight, AbleSMXCo
 	@Override
 	public void paint( ESMPD g, ESMPS pan ) {
 		if( helper.getTimeLong() - lastRFtime > refreshThres ){
-			useRate= cpuInfo.getUsageR();
+			new updater();
 			lastRFtime= helper.getTimeLong();
 		}
 		// draw cpu. msg.
-		g.drawString( "CPU", super.xmin, super.ymin + fontS - 2, txC, font );
+		g.drawString( "CPU ", super.getXmin() - x1 - 10, super.getYmax() - 2, txC, font );
 		// draw rate.
-		Paint gp= new GradientPaint( super.xmin + barXOS, super.ymin + barYOS, br1C,
-				super.xmin + super.getWidth(), super.ymin + barXOS, br2C, true );
-		int tot= super.getWidth() - ( barXOS - frmXOS ) - barXOS;
-		g.fillRect( super.xmin + barXOS, super.ymin + barYOS,
-				(int) ( tot * useRate ), super.getHeight() - barYOS * 2, gp );
+		Paint gp= new GradientPaint( super.xmin, super.ymin, br1C,
+				super.xmin + super.getWidth(), super.ymin, br2C, true );
+		int tot= super.getWidth();
+		g.fillRect( super.xmin, super.ymin + barYOS, (int) ( tot * useRate ),
+				super.getHeight() - barYOS * 2, gp );
 		// draw frame.
-		g.drawLine( frmXOS + super.xmin, super.ymin + super.getHeight(),
+		g.drawLine( super.xmin, super.ymin + super.getHeight(),
 				super.xmin + super.getWidth(), super.ymin + super.getHeight(), 1, edC );
 		g.drawLine( super.xmin + super.getWidth(), super.ymin + super.getHeight(),
 				super.xmin + super.getWidth(), super.ymin, 1, edC );
-		g.drawString( ( (int) ( useRate * 100 ) ) + " %",
-				super.xmin + super.getWidth() + 5, super.ymin + fontS - 2, txC, font );
+		g.drawString( ( (int) ( useRate * 100 ) ) + "%",
+				super.xmax + 10, super.getYmax() - 2, txC, font );
+		if( !centered ){
+			x1= g.getTxtWid( "CPU", font );
+			x2= g.getTxtWid( "%50", font );
+			int wid= x1 + x2 + super.getWidth() + 20;
+			super.setXY( 0, wid, super.ymin, super.ymax );
+			centered= true;
+			pin2ScreenLocationer.centerThisX( this, pan );
+		}
+	}
+
+	// use extra thread to eliminate lag.
+	private class updater extends Thread {
+		public updater() {
+			this.start();
+		}
+
+		public void run() {
+			useRate= cpuInfo.getUsageR();
+		}
 	}
 
 	@Override

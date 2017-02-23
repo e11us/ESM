@@ -1,10 +1,11 @@
 package ellus.ESM.Machine;
 
 import java.util.ArrayList;
+import ellus.ESM.ESMP.PasswordManager;
 import ellus.ESM.ESMW.ESMW_Home;
 import ellus.ESM.data.SQL.mySQLportal;
+import ellus.ESM.setting.SCon;
 import ellus.ESM.setting.SMan;
-import ellus.ESM.setting.SManX;
 
 
 

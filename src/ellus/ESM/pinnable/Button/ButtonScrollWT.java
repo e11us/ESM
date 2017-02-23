@@ -7,10 +7,10 @@ import java.awt.Paint;
 import ellus.ESM.ESMW.ESMPD;
 import ellus.ESM.ESMW.ESMPS;
 import ellus.ESM.pinnable.pin;
-import ellus.ESM.pinnable.able_Interface.AbleClick;
-import ellus.ESM.pinnable.able_Interface.AbleHoverHighlight;
-import ellus.ESM.pinnable.able_Interface.AbleMouseWheel;
-import ellus.ESM.pinnable.able_Interface.AbleSMXConfig;
+import ellus.ESM.pinnable.Able.AbleClick;
+import ellus.ESM.pinnable.Able.AbleHoverHighlight;
+import ellus.ESM.pinnable.Able.AbleMouseWheel;
+import ellus.ESM.pinnable.Able.AbleSMXConfig;
 import ellus.ESM.setting.SCon;
 import ellus.ESM.setting.SManXAttr.AttrType;
 import ellus.ESM.setting.SManXElm;
@@ -30,7 +30,7 @@ public class ButtonScrollWT extends pin implements AbleHoverHighlight, AbleClick
 	private int			indTot		= 0;
 	private int			xOS, xOS2, xOST, xOSM, yOST, yOS, yOS2;
 	private String		msg;
-	private boolean SSmode= false;
+	private boolean		SSmode		= false;
 
 	public ButtonScrollWT( SManXElm elm, int x, int y, int indTot, String msg ) {
 		this.elm= elm;
@@ -41,7 +41,7 @@ public class ButtonScrollWT extends pin implements AbleHoverHighlight, AbleClick
 		reset();
 		SSmode= true;
 	}
-	
+
 	public ButtonScrollWT( SManXElm elm, int indTot, String msg ) {
 		this.elm= elm;
 		this.msg= msg;
@@ -53,22 +53,21 @@ public class ButtonScrollWT extends pin implements AbleHoverHighlight, AbleClick
 
 	@Override
 	public void reset() {
-		if( SSmode ) {
+		if( SSmode ){
 			super.setXY(
 					super.getXmin(), super.getXmin() +
 							elm.getAttr( AttrType._int, "Width" ).getInteger(),
 					super.getYmin(), super.getYmin() +
-							elm.getAttr( AttrType._int, "Height" ).getInteger() );	
-		}else {
+							elm.getAttr( AttrType._int, "Height" ).getInteger() );
+		}else{
 			super.setXY(
 					elm.getAttr( AttrType._location, "Location" ).getLocation().getX(),
 					elm.getAttr( AttrType._location, "Location" ).getLocation().getX() +
-					elm.getAttr( AttrType._int, "Width" ).getInteger(),
+							elm.getAttr( AttrType._int, "Width" ).getInteger(),
 					elm.getAttr( AttrType._location, "Location" ).getLocation().getY(),
-					elm.getAttr( AttrType._location, "Location" ).getLocation().getY()+
-					elm.getAttr( AttrType._int, "Height" ).getInteger() );
+					elm.getAttr( AttrType._location, "Location" ).getLocation().getY() +
+							elm.getAttr( AttrType._int, "Height" ).getInteger() );
 		}
-		
 		barNum= elm.getAttr( AttrType._int, "BarNumberTotal" ).getInteger();
 		barSize= elm.getAttr( AttrType._int, "BarSize" ).getInteger();
 		edsize= elm.getAttr( AttrType._int, "EdgeSize" ).getInteger();
@@ -205,7 +204,5 @@ public class ButtonScrollWT extends pin implements AbleHoverHighlight, AbleClick
 	}
 
 	@Override
-	public void B1clickAction( int x, int y ) {
-		
-	}
+	public void B1clickAction( int x, int y ) {}
 }

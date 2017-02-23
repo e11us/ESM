@@ -1,5 +1,3 @@
 package ellus.ESM.data.SQL;
 
-public class NoteEntryData {
-	
-}
+public class NoteEntryData {}

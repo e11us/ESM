@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import javax.swing.JPanel;
 import ellus.ESM.Machine.helper;
 import ellus.ESM.pinnable.pinnable;
-import ellus.ESM.pinnable.able_Interface.AbleMouseDrag;
+import ellus.ESM.pinnable.Able.AbleMouseDrag;
 import ellus.ESM.setting.SManXAttr.AttrType;
 import ellus.ESM.setting.SManXElm;
 
@@ -21,11 +21,11 @@ public class ESMPS {
 	public boolean isFullScreen() {
 		return this.FullScreen;
 	}
-
+	
 	public boolean isTitleDecorated() {
 		return this.titleDecorated;
 	}
-
+	
 	public boolean isTranslucentPanel() {
 		return this.translucentPane;
 	}
@@ -61,9 +61,9 @@ public class ESMPS {
 	public int ViewOriginY() {
 		return ViewOrignY;
 	}
-	
+
 	public void changeViewCenterP( int x, int y ) {
-		changeViewCenter( x, y , null );
+		changeViewCenter( x, y, null );
 	}
 
 	public int mouseCurrentX() {
@@ -197,11 +197,13 @@ public class ESMPS {
 	 |||
 	||||--------------------------------------------------------------------------------------------*/
 	protected void reWrite() {
-		config.getAttr( AttrType._int, "PanelWidth" ).setVal( this.PanelW + "" );
-		config.getAttr( AttrType._int, "PanelHeight" ).setVal( this.PanelH + "" );
-		config.getAttr( AttrType._int, "PanelX" ).setVal( this.PanelX + "" );
-		config.getAttr( AttrType._int, "PanelY" ).setVal( this.PanelY + "" );
-		config.getAttr( AttrType._int, "PanelLevel" ).setVal( this.PanelLevel + "" );
+		if( config != null ){
+			config.getAttr( AttrType._int, "PanelWidth" ).setVal( this.PanelW + "" );
+			config.getAttr( AttrType._int, "PanelHeight" ).setVal( this.PanelH + "" );
+			config.getAttr( AttrType._int, "PanelX" ).setVal( this.PanelX + "" );
+			config.getAttr( AttrType._int, "PanelY" ).setVal( this.PanelY + "" );
+			config.getAttr( AttrType._int, "PanelLevel" ).setVal( this.PanelLevel + "" );
+		}
 	}
 
 	// =========================================.must set.===================================
@@ -231,8 +233,8 @@ public class ESMPS {
 	protected int					keyboardNavSpeed				= 5;
 	protected boolean				mouseDragNavEnable				= false;
 	// window panel related.
-	protected boolean				windowDragByTitleEnable= false;
-	protected int 					windowTitleHeight= 0;
+	protected boolean				windowDragByTitleEnable			= false;
+	protected int					windowTitleHeight				= 0;
 	//
 	// =======================================.optional set.=================================
 	//
@@ -241,6 +243,8 @@ public class ESMPS {
 	protected int					contLocationViewChangeLockXmax	= 0;
 	protected int					contLocationViewChangeLockYmin	= 0;
 	protected int					contLocationViewChangeLockYmax	= 0;
+	protected int					EdgeViewLimitX					= 0;
+	protected int					EdgeViewLimitY					= 0;
 	protected int					ViewXmin						= 0;
 	protected int					ViewXmax						= 0;
 	protected int					ViewYmin						= 0;
@@ -287,19 +291,14 @@ public class ESMPS {
 	}
 
 	protected void changeViewCenter( int x, int y, String source ) {
-		if( source != null )
+		if( source != null ){
 			switch( source ){
-				case "mouseWheel" :
-					if( this.mousewheelNavEnable )
-						y*= this.mouseWheelNavSpeed;
-					else return;
-					break;
 				case "keyboard" :
-					if( this.keyboardNavEnable )
-						y*= this.keyboardNavSpeed;
-					else return;
+					if( !this.keyboardNavEnable )
+						return;
 					break;
 			}
+		}
 		ViewCenterY+= y;
 		ViewCenterX+= x;
 		setViewOrign();
@@ -311,7 +310,7 @@ public class ESMPS {
 		if( y != 0 && contLocationViewChangeLockEnable ){
 			// test if scroll is needed.
 			if( contLocationViewChangeLockYmax - contLocationViewChangeLockYmin
-					+ contLocationViewChangeLockDis * 2 < PanelH ){
+					+ contLocationViewChangeLockDis * 2 < PanelH - EdgeViewLimitY * 2 ){
 				ViewCenterY-= y;
 				setViewOrign();
 			}else{
@@ -328,7 +327,7 @@ public class ESMPS {
 		if( x != 0 && contLocationViewChangeLockEnable ){
 			// test is scroll is needed.
 			if( contLocationViewChangeLockXmax - contLocationViewChangeLockXmin
-					+ contLocationViewChangeLockDis * 2 < PanelW ){
+					+ contLocationViewChangeLockDis * 2 < PanelW - EdgeViewLimitX * 2 ){
 				ViewCenterX-= x;
 				setViewOrign();
 			}else{
@@ -347,10 +346,10 @@ public class ESMPS {
 	private void setViewOrign() {
 		ViewOrignX= (int) ( PanelW / 2.0 ) * -1 + ViewCenterX;
 		ViewOrignY= (int) ( PanelH / 2.0 ) * -1 + ViewCenterY;
-		ViewYmin= (int) ( PanelH / 2.0 ) * -1 + ViewCenterY;
-		ViewYmax= (int) ( PanelH / 2.0 ) + ViewCenterY;
-		ViewXmin= (int) ( PanelW / 2.0 ) * -1 + ViewCenterX;
-		ViewXmax= (int) ( PanelW / 2.0 ) + ViewCenterX;
+		ViewYmin= (int) ( PanelH / 2.0 ) * -1 + ViewCenterY + EdgeViewLimitY;
+		ViewYmax= (int) ( PanelH / 2.0 ) + ViewCenterY - EdgeViewLimitY;
+		ViewXmin= (int) ( PanelW / 2.0 ) * -1 + ViewCenterX + EdgeViewLimitX;
+		ViewXmax= (int) ( PanelW / 2.0 ) + ViewCenterX - EdgeViewLimitX;
 	}
 
 	/*||----------------------------------------------------------------------------------------------

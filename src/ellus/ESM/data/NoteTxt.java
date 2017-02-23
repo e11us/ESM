@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
-import ellus.ESM.Machine.f;
 import ellus.ESM.Machine.helper;
 import ellus.ESM.data.sys.UseLogger;
 import ellus.ESM.setting.SCon;
@@ -62,7 +61,6 @@ public class NoteTxt {
 	}
 
 	public void storeNewChange() {
-		f.f( "store" );
 		// delete previous. & log it.
 		delete();
 		// update filepath.
