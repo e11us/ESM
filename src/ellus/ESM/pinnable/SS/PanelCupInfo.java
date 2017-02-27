@@ -98,6 +98,7 @@ public class PanelCupInfo extends pinSS implements AbleHoverHighlight, AbleSMXCo
 			this.start();
 		}
 
+		@Override
 		public void run() {
 			useRate= cpuInfo.getUsageR();
 		}

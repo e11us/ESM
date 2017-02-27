@@ -919,6 +919,88 @@ public class helper {
 	}
 
 	/*||----------------------------------------------------------------------------------------------
+	 ||| get all file from given path with the given ext.
+	|||| ex: "./home", "txt" will get all txt in home. returning is complete path.
+	||||--------------------------------------------------------------------------------------------*/
+	public static ArrayList <String> getAllFile( String path, String[] ext ) {
+		ArrayList <String> file= new ArrayList <>();
+		File dbPath= new File( path );
+		if( dbPath.exists() ){
+			try{
+				Files.walk( Paths.get( path ) ).forEach(
+						filePath -> {
+							if( !Files.isDirectory( filePath ) ){
+								file.add( filePath.toAbsolutePath().toString() );
+							}
+						} );
+			}catch ( IOException e ){
+				e.printStackTrace();
+			}
+			if( ext != null && ext.length != 0 ){
+				boolean found= false;
+				for( int i= 0; i < file.size(); i++ ){
+					found= false;
+					for( String str : ext ){
+						if( getFileExt( file.get( i ) ).toLowerCase().equals( str.toLowerCase() ) ){
+							found= true;
+							break;
+						}
+					}
+					if( !found ){
+						file.remove( i-- );
+					}
+				}
+			}
+			//display.println( ( (Object)new helper() ).getClass().toString(), "total of " + file.size() + " <" + ext + "> is found in " + path );
+			return file;
+		}else{
+			//display.println( ( (Object)new helper() ).getClass().toString(), "bad path." );
+			return file;
+		}
+	}
+
+	/*||----------------------------------------------------------------------------------------------
+	 ||| get all file from given path with the given ext.
+	|||| ex: "./home", "txt" will get all txt in home. returning is complete path.
+	||||--------------------------------------------------------------------------------------------*/
+	public static ArrayList <String> getAllFile( String path, ArrayList <String> ext ) {
+		ArrayList <String> file= new ArrayList <>();
+		File dbPath= new File( path );
+		if( dbPath.exists() ){
+			try{
+				Files.walk( Paths.get( path ) ).forEach(
+						filePath -> {
+							if( !Files.isDirectory( filePath ) ){
+								file.add( filePath.toAbsolutePath().toString() );
+							}
+						} );
+			}catch ( IOException e ){
+				e.printStackTrace();
+			}
+			if( ext != null && ext.size() != 0 ){
+				boolean found= false;
+				for( int i= 0; i < file.size(); i++ ){
+					found= false;
+					for( String str : ext ){
+						if( getFileExt( file.get( i ) ).toLowerCase().equals( str.toLowerCase() ) ){
+							found= true;
+							break;
+						}
+					}
+					if( !found ){
+						file.remove( i-- );
+					}
+				}
+			}
+			//display.println( ( (Object)new helper() ).getClass().toString(), "total of " + file.size() + " <" + ext + "> is found in " + path );
+			return file;
+		}else{
+			//display.println( ( (Object)new helper() ).getClass().toString(), "bad path." );
+			return file;
+		}
+	}
+
+	/*||----------------------------------------------------------------------------------------------
 	 ||| get dir file from given path with the given ext.
 	|||| ex: "./home", "txt" will get all txt in home. returning is complete path.
 	||||--------------------------------------------------------------------------------------------*/
@@ -1719,6 +1801,48 @@ public class helper {
 		}catch ( IOException e ){
 			e.printStackTrace();
 			return;
+		}
+	}
+
+	// parse as 2017 01 01. or 01 01
+	public static String parseDate( String inp ) {
+		if( inp == null || inp.length() == 0 )
+			return null;
+		Scanner rdr= new Scanner( inp );
+		try{
+			int yea= rdr.nextInt();
+			int mon= rdr.nextInt();
+			int d= 0;
+			if( rdr.hasNextInt() ){
+				d= rdr.nextInt();
+				return yea + " " + mon + " " + d;
+			}else{
+				DateTime dt= new DateTime();
+				return dt.getYear() + " " + yea + " " + mon;
+			}
+		}catch ( Exception ee ){
+			return null;
+		}
+	}
+
+	// parse as 2017 01 01. or 01 01
+	public static int parseDate2Int( String inp ) {
+		if( inp == null || inp.length() == 0 )
+			return -1;
+		Scanner rdr= new Scanner( inp );
+		try{
+			int yea= rdr.nextInt();
+			int mon= rdr.nextInt();
+			int d= 0;
+			if( rdr.hasNextInt() ){
+				d= rdr.nextInt();
+				return yea * 10000 + mon * 100 + d;
+			}else{
+				DateTime dt= new DateTime();
+				return dt.getYear() * 10000 + 100 * yea + mon;
+			}
+		}catch ( Exception ee ){
+			return -1;
 		}
 	}
 }

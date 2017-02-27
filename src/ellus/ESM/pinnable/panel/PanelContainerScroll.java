@@ -45,8 +45,6 @@ public class PanelContainerScroll extends pin implements AbleHoverHighlight, Abl
 
 	@Override
 	public void reset() {
-		if( cont == null || cont.size() == 0 )
-			return;
 		if( SSmode ){
 			super.setXY(
 					elm.getAttr( AttrType._location, "Location" ).getLocation().getX(),
@@ -73,7 +71,7 @@ public class PanelContainerScroll extends pin implements AbleHoverHighlight, Abl
 		xOS= elm.getAttr( AttrType._int, "ToEdgeDistanceX" ).getInteger();
 		yOS= elm.getAttr( AttrType._int, "ToEdgeDistanceY" ).getInteger();
 		//
-		if( cont.get( 0 ).getWidth() == 0 )
+		if( cont == null || cont.size() == 0 || cont.get( 0 ).getWidth() == 0 )
 			return;
 		maxPerline= ( super.getWidth() - xOS * 2 + xSep ) / ( cont.get( 0 ).getWidth() + xSep );
 		maxLineTot= ( super.getHeight() - yOS * 2 + ySep ) / ( cont.get( 0 ).getHeight() + ySep );
@@ -81,8 +79,6 @@ public class PanelContainerScroll extends pin implements AbleHoverHighlight, Abl
 
 	@Override
 	public void paint( ESMPD g, ESMPS pan ) {
-		if( edsize == 0 || cont == null || cont.size() == 0 || maxPerline == 0 )
-			return;
 		pan.addGUIactive( this );
 		//
 		Paint gp= new GradientPaint( pan.w2bX( super.getXmin() ), pan.w2bY( super.getYmin() ), bg1C,
@@ -92,6 +88,9 @@ public class PanelContainerScroll extends pin implements AbleHoverHighlight, Abl
 				super.getWidth(), super.getHeight(), gp );
 		g.drawRect( pan.w2bX( super.getXmin() ), pan.w2bY( super.getYmin() ),
 				super.getWidth(), super.getHeight(), edsize, edC );
+		//
+		if( cont == null || cont.size() == 0 || maxPerline == 0 )
+			return;
 		//
 		int xS= ( super.getXmin() + xOS );
 		int yS= ( super.getYmin() + yOS );
@@ -116,6 +115,7 @@ public class PanelContainerScroll extends pin implements AbleHoverHighlight, Abl
 
 	public void resetCont( ArrayList <pinnable> cont ) {
 		this.cont= cont;
+		ind= 0;
 		reset();
 	}
 

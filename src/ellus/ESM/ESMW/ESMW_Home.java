@@ -7,28 +7,29 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.io.File;
 import java.util.ArrayList;
+import ellus.ESM.ESMP.AudioPlayer;
 import ellus.ESM.ESMP.Calendar;
 import ellus.ESM.ESMP.Dictionary;
 import ellus.ESM.ESMP.FileSys;
 import ellus.ESM.ESMP.NoteEntry;
 import ellus.ESM.ESMP.PasswordManager;
+import ellus.ESM.ESMP.YoutubeDL;
 import ellus.ESM.Machine.display;
+import ellus.ESM.Machine.f;
 import ellus.ESM.Machine.helper;
 import ellus.ESM.data.SQL.mySQLportal;
 import ellus.ESM.data.Source.SourceDouble;
 import ellus.ESM.data.dictionary.dictDB;
 import ellus.ESM.data.sys.BackupEr;
 import ellus.ESM.pinnable.pin2GridLocationer;
-import ellus.ESM.pinnable.pin2ScreenLocationer;
 import ellus.ESM.pinnable.pinnable;
 import ellus.ESM.pinnable.Able.AbleClickHighlight;
 import ellus.ESM.pinnable.Button.ButtonTextFS;
 import ellus.ESM.pinnable.Button.ButtonTextFS2;
-import ellus.ESM.pinnable.ButtonAni.ButtonCircle;
 import ellus.ESM.pinnable.ButtonAni.ButtonSpikeHori;
 import ellus.ESM.pinnable.LF.PaneRect;
-import ellus.ESM.pinnable.LF.SideShadeAutoHide;
 import ellus.ESM.pinnable.Note.NoteText;
 import ellus.ESM.pinnable.SS.PanelBackgroundDotCenterFlow;
 import ellus.ESM.pinnable.SS.PanelBackgroundDotGrid;
@@ -42,14 +43,23 @@ import ellus.ESM.pinnable.SS.PanelCupInfo;
 import ellus.ESM.pinnable.SS.PanelDateTimeInfo;
 import ellus.ESM.pinnable.SS.PanelFpsInfo;
 import ellus.ESM.pinnable.SS.PanelMemInfo;
+import ellus.ESM.pinnable.panel.PanelPopUpMsg;
+import ellus.ESM.roboSys.DeskTop;
 import ellus.ESM.setting.SCon;
 import ellus.ESM.setting.SMan;
 import ellus.ESM.setting.SManX;
 import ellus.ESM.setting.SManXAttr.AttrType;
 import ellus.ESM.setting.SManXElm;
+import notUsed.PicScraping_AllPicInPage;
+import notUsed.magLinkChecker;
 
 
 
+/*
+ * font index 23 support chinese and english.
+ *
+ *
+ */
 public class ESMW_Home extends ESMW {
 	// homePanel for bg and PL for use.
 	private ESMW_Home		handler			= this;
@@ -66,6 +76,10 @@ public class ESMW_Home extends ESMW {
 	private ESMPL			homeApps		= null;
 	//
 	// setting config.
+	private SManXElm		apSE			= SManX.get( "ESM", "_the_ESM_" )
+			.getElm( "Window", SCon.SB_Home_SManX_Name ).getElm( "ESMPanel", "AudioPlayer" );
+	private SManXElm		ytdlSE			= SManX.get( "ESM", "_the_ESM_" )
+			.getElm( "Window", SCon.SB_Home_SManX_Name ).getElm( "ESMPanel", "YoutubeDL" );
 	private SManXElm		calSE			= SManX.get( "ESM", "_the_ESM_" )
 			.getElm( "Window", SCon.SB_Home_SManX_Name ).getElm( "ESMPanel", "Calendar" );
 	private SManXElm		dictSE			= SManX.get( "ESM", "_the_ESM_" )
@@ -86,7 +100,12 @@ public class ESMW_Home extends ESMW {
 	private enum HomeOption {
 		regular, note, link, noteWallSelect, apps
 	};
-
+	// pop up msg.
+	private boolean ShowingEscPop= false;
+	private PanelPopUpMsg escPop= null;
+	private long lastESCpress= 0;
+	
+	
 	public ESMW_Home() {
 		// setup fps.
 		fpsPan= setupFpsMA( SE );
@@ -116,6 +135,7 @@ public class ESMW_Home extends ESMW {
 		homePanel.bgPL= homeBgRegular;
 		homePanel.Subpls.add( homeRegular );
 		homePanel.masterSE= SE;
+		homePanel.name= "ESMW_Home";
 		//  Frame SetUp. (set it to frame bg. )
 		super.bgPanel= homePanel;
 		super.init( SE.getElm( "ESMW", "HomeFrame" ) );
@@ -137,7 +157,30 @@ public class ESMW_Home extends ESMW {
 				if( lk.length() == 1 ){
 					switch( lk.charAt( 0 ) ){
 						case 27 :// esc
-							switch2HomeRegular();
+							if( HO != HomeOption.regular )
+								switch2HomeRegular();
+							else {
+								if( helper.getTimeLong() - lastESCpress < 400 ) {
+									handler.miniFrame();
+									escPop.B1clickAction( 0, 0 );
+									escPop= null;
+									return;
+								}else if( !ShowingEscPop ) {
+									ShowingEscPop= true;
+									escPop= new PanelPopUpMsg(
+											SE.getElm( "ESMPanel", "HomePanel" ).getElm( "ESMPL", "homeRegular" ).
+											getElm( "PanelPopUpMsg", "ESC_PopUpMsg" ), "Double Tap ESC to Minimize Window" ) {
+										@Override
+										public void B1clickAction( int x, int y ) {
+											this.removeMe= true;
+											ShowingEscPop= false;
+										}
+									};
+									escPop.setSelfCloseTime( 5 );
+									bgPL.add( 6, escPop ); 
+								}
+								lastESCpress= helper.getTimeLong();
+							}
 							break;
 						case 10 :// enter.
 							break;
@@ -218,11 +261,11 @@ public class ESMW_Home extends ESMW {
 	}
 
 	private void switchHomebyIndex() {
-		if( HO_index > 3 )
-			HO_index= 3;
+		if( HO_index > 2 )
+			HO_index= 2;
 		else if( HO_index < 0 )
 			HO_index= 0;
-		if( HO == HomeOption.apps )
+		if( HO == HomeOption.apps || HO == HomeOption.noteWallSelect )
 			return;
 		//
 		switch( HO_index ){
@@ -245,6 +288,9 @@ public class ESMW_Home extends ESMW {
 	 |||
 	||||--------------------------------------------------------------------------------------------*/
 	private void switch2HomeRegular() {
+		// always clear menu.
+		homePanel.menuPL= null;
+		//
 		if( HO != HomeOption.regular ){
 			HO= HomeOption.regular;
 			HO_index= 1;
@@ -260,6 +306,9 @@ public class ESMW_Home extends ESMW {
 	}
 
 	private void switch2HomeLink() {
+		// always clear menu.
+		homePanel.menuPL= null;
+		//
 		if( HO != HomeOption.link ){
 			HO= HomeOption.link;
 			HO_index= 0;
@@ -271,6 +320,12 @@ public class ESMW_Home extends ESMW {
 	}
 
 	private void switch2HomeNote() {
+		// always clear menu.
+		homePanel.menuPL= null;
+		//
+		// always clear menu.
+		homePanel.menuPL= null;
+		//
 		if( HO != HomeOption.note ){
 			HO= HomeOption.note;
 			HO_index= 2;
@@ -282,6 +337,12 @@ public class ESMW_Home extends ESMW {
 	}
 
 	private void switch2HomeNWSB() {
+		// always clear menu.
+		homePanel.menuPL= null;
+		//
+		homeNWSB= setHomePanelNWSB( homePanel.PS,
+				SE.getElm( "ESMPanel", "HomePanel" ).getElm( "ESMPL", "homeNoteWallSB" ) );
+		//
 		if( HO != HomeOption.noteWallSelect ){
 			HO= HomeOption.noteWallSelect;
 			HO_index= 3;
@@ -304,6 +365,9 @@ public class ESMW_Home extends ESMW {
 	}
 
 	private void switch2HomeApps() {
+		// always clear menu.
+		homePanel.menuPL= null;
+		//
 		if( HO != HomeOption.apps ){
 			HO= HomeOption.apps;
 			HO_index= 4;
@@ -329,6 +393,7 @@ public class ESMW_Home extends ESMW {
 	 |||
 	||||--------------------------------------------------------------------------------------------*/
 	private ESMPL SetHomePanelBGNote( ESMPS PS, SManXElm config ) {
+		//
 		ESMPL bgPL= new ESMPL();
 		for( SManXElm elm : config.getElmAll() ){
 			switch( elm.getType() ){
@@ -630,8 +695,8 @@ public class ESMW_Home extends ESMW {
 		if( cato != null ){
 			// for each cato. skip home pin and link.
 			for( String tmp : cato ){
-				if( tmp.equals( SMan.getSetting( 0 ) + SMan.getSetting( 10 ) ) ||
-						tmp.equals( SMan.getSetting( 0 ) + SMan.getSetting( 14 ) ) )
+				if( helper.getFilePathName( tmp ).equals( helper.getFilePathName( SMan.getSetting( 10 ) ) ) ||
+						helper.getFilePathName( tmp ).equals( helper.getFilePathName( SMan.getSetting( 14 ) ) ) )
 					continue;
 				//
 				fs2but= new ButtonTextFS2( config.getElm( "ButtonTextFS2", "categoryName" ),
@@ -655,7 +720,7 @@ public class ESMW_Home extends ESMW {
 							// get into sub board.
 							@Override
 							public void B1clickAction( int x, int y ) {
-								handler.miniFrame();
+								handler.hideFrame();
 								ESMW_NoteWall nw= new ESMW_NoteWall( handler, tmp2 );
 							}
 
@@ -752,6 +817,39 @@ public class ESMW_Home extends ESMW {
 		locator.next( fs2but );
 		pl.add( 1, fs2but );
 		//
+		fs2but= new ButtonTextFS2( config.getElm( "ButtonTextFS2", "boardName" ),
+				"DeskTop Link", 0, 0 ) {
+			// get into sub board.
+			@Override
+			public void B1clickAction( int x, int y ) {
+				switch2HomeLink();
+			}
+		};
+		locator.next( fs2but );
+		pl.add( 1, fs2but );
+		//
+		fs2but= new ButtonTextFS2( config.getElm( "ButtonTextFS2", "boardName" ),
+				"DeskTop Note", 0, 0 ) {
+			// get into sub board.
+			@Override
+			public void B1clickAction( int x, int y ) {
+				switch2HomeNote();
+			}
+		};
+		locator.next( fs2but );
+		pl.add( 1, fs2but );
+		//
+		fs2but= new ButtonTextFS2( config.getElm( "ButtonTextFS2", "boardName" ),
+				"NoteWalls", 0, 0 ) {
+			// get into sub board.
+			@Override
+			public void B1clickAction( int x, int y ) {
+				switch2HomeNWSB();
+			}
+		};
+		locator.next( fs2but );
+		pl.add( 1, fs2but );
+		//
 		locator.nextRow();
 		//
 		// ESM utility.
@@ -813,6 +911,80 @@ public class ESMW_Home extends ESMW {
 		};
 		locator.next( fs2but );
 		pl.add( 1, fs2but );
+		//
+		fs2but= new ButtonTextFS2( config.getElm( "ButtonTextFS2", "boardName" ),
+				"YTDL", 0, 0 ) {
+			// get into sub board.
+			@Override
+			public void B1clickAction( int x, int y ) {
+				switch2HomeRegular();
+				handler.addPanel( YoutubeDL.getInstance( ytdlSE ) );
+			}
+		};
+		locator.next( fs2but );
+		pl.add( 1, fs2but );
+		//
+		fs2but= new ButtonTextFS2( config.getElm( "ButtonTextFS2", "boardName" ),
+				"Audio Player", 0, 0 ) {
+			// get into sub board.
+			@Override
+			public void B1clickAction( int x, int y ) {
+				switch2HomeRegular();
+				handler.addPanel( new AudioPlayer( apSE ) );
+			}
+		};
+		locator.next( fs2but );
+		pl.add( 1, fs2but );
+		//
+		fs2but= new ButtonTextFS2( config.getElm( "ButtonTextFS2", "boardName" ),
+				"Open ESM folder", 0, 0 ) {
+			// get into sub board.
+			@Override
+			public void B1clickAction( int x, int y ) {
+				try{
+					DeskTop.getDeskTop().open( new File( SMan.getSetting( 0 ) ) );
+				}catch ( Exception ee ){}
+			}
+		};
+		locator.next( fs2but );
+		pl.add( 1, fs2but );
+		//
+		fs2but= new ButtonTextFS2( config.getElm( "ButtonTextFS2", "boardName" ),
+				"Magnet: On", 0, 0 ) {
+			// get into sub board.
+			@Override
+			public void B1clickAction( int x, int y ) {
+				if( this.msg.equals( "Magnet: On" ) ){
+					magLinkChecker.stopChecker();
+					this.setMsg( "Magnet: Off" );
+				}else{
+					magLinkChecker.startChecker();
+					this.setMsg( "Magnet: On" );
+				}
+			}
+		};
+		//
+		magLinkChecker.startChecker();
+		//
+		locator.next( fs2but );
+		pl.add( 1, fs2but );
+		//
+		fs2but= new ButtonTextFS2( config.getElm( "ButtonTextFS2", "boardName" ),
+				"Pic DL: Off", 0, 0 ) {
+			// get into sub board.
+			@Override
+			public void B1clickAction( int x, int y ) {
+				if( this.msg.equals( "Pic DL: On" ) ){
+					PicScraping_AllPicInPage.end();
+					this.setMsg( "Pic DL: Off" );
+				}else{
+					PicScraping_AllPicInPage.start();
+					this.setMsg( "Pic DL: On" );
+				}
+			}
+		};
+		locator.next( fs2but );
+		pl.add( 1, fs2but );
 		/*-------------
 		//
 		fs2but= new ButtonTextFS2( config.getElm( "ButtonTextFS2", "boardName" ),
@@ -820,7 +992,7 @@ public class ESMW_Home extends ESMW {
 			// get into    sub board.
 			@Override
 			public void B1clickAction( int x, int y ) {
-				
+		
 			}
 		};
 		locator.next( fs2but );
@@ -964,6 +1136,13 @@ public class ESMW_Home extends ESMW {
 				break;
 		}
 		return PL;
+	}
+
+	/*||----------------------------------------------------------------------------------------------
+	 |||
+	||||--------------------------------------------------------------------------------------------*/
+	public void _ExitESM() {
+		exitESM();
 	}
 
 	/*||----------------------------------------------------------------------------------------------

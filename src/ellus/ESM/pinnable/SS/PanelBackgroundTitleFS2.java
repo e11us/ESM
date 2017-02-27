@@ -40,7 +40,7 @@ public class PanelBackgroundTitleFS2 extends pinSS implements AbleSMXConfig, Abl
 		this.titleXOS2= (int) ( inp.getAttr( SManXAttr.AttrType._double, "titleXOS2" ).getDouble() * PS.getWidth() );
 		this.titleYOS2= inp.getAttr( SManXAttr.AttrType._int, "titleYOS2" ).getInteger();
 		this.titleXOS3= inp.getAttr( SManXAttr.AttrType._int, "titleXOS3" ).getInteger();
-		this.titleYOS3=  inp.getAttr( SManXAttr.AttrType._int, "titleYOS3" ).getInteger();
+		this.titleYOS3= inp.getAttr( SManXAttr.AttrType._int, "titleYOS3" ).getInteger();
 		this.SquareSize= inp.getAttr( SManXAttr.AttrType._int, "SquareSize" ).getInteger();
 		this.sideStripeWidth= inp.getAttr( SManXAttr.AttrType._int, "sideStripeWidth" ).getInteger();
 		this.sideStripYOS= inp.getAttr( SManXAttr.AttrType._int, "sideStripYOS" ).getInteger();

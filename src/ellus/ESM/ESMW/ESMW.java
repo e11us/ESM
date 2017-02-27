@@ -8,6 +8,7 @@ import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +18,7 @@ import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.WindowConstants;
 import ellus.ESM.Machine.display;
+import ellus.ESM.Machine.f;
 import ellus.ESM.Machine.helper;
 import ellus.ESM.data.Source.SourceDouble;
 import ellus.ESM.data.sys.UseLogger;
@@ -44,13 +46,13 @@ public class ESMW {
 	private boolean					autoClose		= false;
 	private int						autoCloseTime	= 0;
 	// fps counter.
-	private int						renderWaitTime	= 10;																																								// so dont init stall.
+	private int						renderWaitTime	= 10;																																																												// so dont init stall.
 	private int						fps;
 	private long					fpsTestLast		= helper.getTimeLong();
 	protected int					fpsMax, fpsMin;
 	protected SourceDouble			fpsSource		= null;
 	// others.
-	private boolean					closeFrame		= false;
+	private boolean					renderGo		= true;
 
 	/*||----------------------------------------------------------------------------------------------
 	 ||| constructor only for class extending this.
@@ -86,9 +88,7 @@ public class ESMW {
 		autoCloseTime= config.getAttr( AttrType._int, "WindowAutoCloseTime(s)" ).getInteger();
 		//
 		frame.setVisible( true );
-		setAnimator();
-		//
-		animator.start();
+		startRender();
 		//	protected boolean			autoScreenSaver					= false;
 	}
 
@@ -151,7 +151,7 @@ public class ESMW {
 	||||--------------------------------------------------------------------------------------------*/
 	protected void closeFrame() {
 		UseLogger.log( name + " - closeFrame()" );
-		closeFrame= true;
+		stopRender();
 		frame.setVisible( false );
 		frame.dispatchEvent( new WindowEvent( frame,
 				WindowEvent.WINDOW_CLOSING ) );
@@ -162,11 +162,20 @@ public class ESMW {
 	 |||
 	||||--------------------------------------------------------------------------------------------*/
 	public void miniFrame() {
+		stopRender();
 		UseLogger.log( name + " - miniFrame()" );
 		frame.setExtendedState( Frame.ICONIFIED );
 	}
 
+	public void hideFrame() {
+		frame.setVisible( false );
+		stopRender();
+	}
+
 	public void maxFrame() {
+		frame.setVisible( true );
+		startRender();
+		//
 		UseLogger.log( name + " - maxFrame()" );
 		frame.setExtendedState( Frame.MAXIMIZED_BOTH );
 		frame.toFront();
@@ -212,29 +221,57 @@ public class ESMW {
 		}catch ( IOException e ){
 			e.printStackTrace();
 		}
+		//
+		frame.addWindowListener( new WindowListener() {
+			@Override
+			public void windowActivated( WindowEvent arg0 ) {}
+
+			@Override
+			public void windowClosed( WindowEvent e ) {}
+
+			@Override
+			public void windowClosing( WindowEvent e ) {}
+
+			@Override
+			public void windowDeactivated( WindowEvent e ) {}
+
+			@Override
+			public void windowDeiconified( WindowEvent e ) {
+				startRender();
+			}
+
+			@Override
+			public void windowIconified( WindowEvent e ) {}
+
+			@Override
+			public void windowOpened( WindowEvent e ) {}
+		} );
+	}
+
+	/*||----------------------------------------------------------------------------------------------
+	 ||| pull control.
+	||||--------------------------------------------------------------------------------------------*/
+	private void startRender() {
+		renderGo= true;
+		setAnimator();
+		animator.start();
+	}
+
+	private void stopRender() {
+		renderGo= false;
 	}
 
 	/*||----------------------------------------------------------------------------------------------
 	 ||| if frame is visable, call child board to see changes, the GUI_input().
 	||||--------------------------------------------------------------------------------------------*/
-	public void setAnimator() {
+	private void setAnimator() {
 		animator= new Thread( "animator-" + helper.rand32AN().substring( 0, 5 ) ) {
 			@Override
 			public void run() {
-				while( !closeFrame ){
+				while( renderGo ){
 					try{
 						// if board visable, call GUI to check any change in pinlist, then print it.
-						if( frame != null && frame.isVisible() && frame.getState() != Frame.ICONIFIED ){
-							/*
-							// if enabled and if idle, go into screen saver board.
-							if( autoScreenSaver && ( ( helper.getTimeLong() - PS.lastMouseInputTime ) ) / 1000 > Integer
-									.parseInt( SMan.getSetting( 1100 ) ) &&
-									( ( helper.getTimeLong() - PS.lastKeyboardInputTime ) ) / 1000 > Integer
-											.parseInt( SMan.getSetting( 1100 ) ) ){
-								hideBoard();
-								BlackScreen bs= new BlackScreen( boardS.getBoard() );
-							}
-							*/
+						if( frame != null ){
 							//
 							bgPanel.repaint();
 							for( ESMPanel con : subPanels ){
@@ -264,6 +301,8 @@ public class ESMW {
 							}
 							//
 							sleep( renderWaitTime );
+							//
+							//   f.f( "rendering" );
 						}
 					}catch ( Exception ee ){}
 				}

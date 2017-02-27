@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import ellus.ESM.Machine.BArray;
 import ellus.ESM.Machine.display;
-import ellus.ESM.Machine.f;
 import ellus.ESM.Machine.helper;
 import ellus.ESM.data.SQL.mySQLportal;
 import ellus.ESM.data.SQL.sqlResult;

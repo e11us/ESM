@@ -1,12 +1,15 @@
 package ellus.ESM.ESMW;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import ellus.ESM.Machine.cor2D;
 import ellus.ESM.Machine.helper;
+import ellus.ESM.pinnable.Button.ButtonTextFS;
 import ellus.ESM.pinnable.Note.NoteText;
 import ellus.ESM.pinnable.SS.PanelBackgroundDotCenterFlow;
 import ellus.ESM.pinnable.SS.PanelBackgroundDotGrid;
@@ -108,6 +111,13 @@ public class ESMW_NoteWall extends ESMW {
 					}
 				}
 			}
+
+			@Override
+			protected synchronized void CheckB3ClickNGE( MouseEvent e ) {
+				// create a new right click panel, and add it.
+				noteWallPanel.menuPL= ( getRightClickMenu( noteWallPanel.PS,
+						SE.getElm( "ESMPL", "notewall" ).getElm( "Setting", "HomePanel_RightClickMenu" ) ) );
+			}
 		};
 		noteWallPanel.masterSE= SE;
 	}
@@ -186,6 +196,51 @@ public class ESMW_NoteWall extends ESMW {
 
 	public void loadAll( String a ) {
 		return;
+	}
+
+	/*||----------------------------------------------------------------------------------------------
+	 |||
+	||||--------------------------------------------------------------------------------------------*/
+	private ESMPL getRightClickMenu( ESMPS PS, SManXElm config ) {
+		ESMPL PL= new ESMPL();
+		Color[] NWButColor= {
+				config.getAttr( AttrType._color, "ButtonColor1" ).getColor(),
+				config.getAttr( AttrType._color, "ButtonColor2" ).getColor(),
+				config.getAttr( AttrType._color, "ButtonColor3" ).getColor(),
+				config.getAttr( AttrType._color, "ButtonColor4" ).getColor(),
+				config.getAttr( AttrType._color, "ButtonColor5" ).getColor()
+		};
+		Color[] NWButColorH= {
+				config.getAttr( AttrType._color, "ButtonColorH1" ).getColor(),
+				config.getAttr( AttrType._color, "ButtonColorH2" ).getColor(),
+				config.getAttr( AttrType._color, "ButtonColorH3" ).getColor(),
+				config.getAttr( AttrType._color, "ButtonColorH4" ).getColor(),
+				config.getAttr( AttrType._color, "ButtonColorH5" ).getColor()
+		};
+		int[] NWButton= {
+				PS.b2wX( PS.MouseLastPositionX ), PS.b2wY( PS.MouseLastPositionY ),
+				config.getAttr( AttrType._int, "ButtonWidth" ).getInteger(),
+				config.getAttr( AttrType._int, "ButtonHeight" ).getInteger(),
+				config.getAttr( AttrType._int, "ButtonXOS" ).getInteger(),
+				config.getAttr( AttrType._int, "ButtonYOS" ).getInteger(), };
+		int sepa= config.getAttr( AttrType._int, "BoardItemSeperation" ).getInteger();
+		int fontInd= config.getAttr( AttrType._int, "BoardFontInd" ).getInteger();
+		int fontSize= config.getAttr( AttrType._int, "BoardFontSize" ).getInteger();
+		//
+		PL.add( 1, new ButtonTextFS( NWButton, NWButColor, NWButColorH,
+				"new TextNote", fontInd, fontSize ) {
+			@Override
+			public void B1clickAction( int x, int y ) {
+				// create a new blank note. and reload all home pins.
+				NoteText newNote= new NoteText(
+						SE.getElm( "ESMPL", "notewall" ).getElm( "NoteTextConfig", "HomeNote_NoteConfig" ),
+						path + "/ " + helper.getCurrentDateStamp() +
+								helper.rand32AN().substring( 0, 5 ) + " " + x + " " + y + " ."
+								+ SCon.Extpinnable2 );
+				noteWall.add( 1, newNote );
+			}
+		} );
+		return PL;
 	}
 }
 /*

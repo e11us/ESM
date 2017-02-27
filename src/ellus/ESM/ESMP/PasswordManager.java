@@ -1,16 +1,13 @@
 package ellus.ESM.ESMP;
 
-import java.awt.AWTException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Scanner;
-import java.util.Timer;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import ellus.ESM.ESMW.ESMPL;
 import ellus.ESM.ESMW.ESMPanel;
-import ellus.ESM.Machine.f;
 import ellus.ESM.Machine.helper;
 import ellus.ESM.data.SQL.mySQLportal;
 import ellus.ESM.data.SQL.sqlResult;
@@ -25,7 +22,6 @@ import ellus.ESM.pinnable.panel.PanelContainerScroll;
 import ellus.ESM.pinnable.panel.PanelTextFieldPin;
 import ellus.ESM.pinnable.panel.PanelTextRead;
 import ellus.ESM.roboSys.keyboard;
-import ellus.ESM.setting.SCon;
 import ellus.ESM.setting.SMan;
 import ellus.ESM.setting.SManXAttr.AttrType;
 import ellus.ESM.setting.SManXElm;
@@ -33,7 +29,6 @@ import ellus.ESM.setting.SManXElm;
 
 
 public class PasswordManager extends ESMPanel implements AbleSMXConfig {
-	private PasswordManager				handler		= this;
 	private SManXElm					showPWconfig= null;
 	private ButtonScrollWT				pgs			= null;
 	private ButtonScrollWT				ags			= null;
@@ -175,6 +170,7 @@ public class PasswordManager extends ESMPanel implements AbleSMXConfig {
 			this.start();
 		}
 
+		@Override
 		public void run() {
 			ptr.setTxt( getPW( pw, key ) );
 		}
@@ -190,6 +186,7 @@ public class PasswordManager extends ESMPanel implements AbleSMXConfig {
 			this.start();
 		}
 
+		@Override
 		public void run() {
 			String res= getPW( pw, key );
 			Scanner rdr= new Scanner( res );
@@ -215,6 +212,7 @@ public class PasswordManager extends ESMPanel implements AbleSMXConfig {
 			this.start();
 		}
 
+		@Override
 		public void run() {
 			ArrayList <pinnable> pwsP= new ArrayList <>();
 			SManXElm config= showPWconfig;
@@ -280,7 +278,7 @@ public class PasswordManager extends ESMPanel implements AbleSMXConfig {
 	||||--------------------------------------------------------------------------------------------*/
 	private static ArrayList <String> getAllPwName() {
 		ArrayList <sqlResult> res= mySQLportal.getByFunc( sqlfuncName, -1, null, null );
-		ArrayList <String> names= new ArrayList <String>();
+		ArrayList <String> names= new ArrayList <>();
 		if( res.size() > 0 ){
 			for( sqlResult resI : res )
 				names.add( resI.val.get( 3 ).toString() );

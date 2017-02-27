@@ -28,6 +28,7 @@ import javax.swing.KeyStroke;
 import javax.swing.event.MouseInputAdapter;
 import ellus.ESM.Machine.cor2D;
 import ellus.ESM.Machine.display;
+import ellus.ESM.Machine.f;
 import ellus.ESM.Machine.helper;
 import ellus.ESM.pinnable.pinnable;
 import ellus.ESM.pinnable.Able.AbleClick;
@@ -68,7 +69,12 @@ public class ESMPanel extends JPanel {
 	// others// print PL?
 	protected boolean			paintPL		= true;
 	protected ESMW				frame		= null;
-
+	//
+	private final String		ID			= helper.rand32AN().substring( 0, 5 );
+	protected String			name		= null;
+	// use for print hover highlight. ( on off by mouse in panel. )
+	private boolean panelFocux= true;
+	
 	/*||----------------------------------------------------------------------------------------------
 	 |||
 	||||--------------------------------------------------------------------------------------------*/
@@ -158,8 +164,9 @@ public class ESMPanel extends JPanel {
 		// check other no-direct GUI input by pulling.
 		HoverHighlight();
 		if( PS.LastKey != null ){
-			KeyboardInp( PS.LastKey );
+			String lk= new String( PS.LastKey );
 			PS.LastKey= null;
+			KeyboardInp( lk );
 		}
 	}
 
@@ -177,8 +184,8 @@ public class ESMPanel extends JPanel {
 				if( PS.MsgOutputTest )
 					display.println( this.getClass().toString(), PS.name + " is focused" );
 				// request focus to the window upon mouse enter. && bring to top.
-				panel.requestFocus();
 				bring2Top();
+				panel.requestFocus();
 				//
 				if( e.getClickCount() == 2 ){
 					switch( e.getButton() ){
@@ -194,8 +201,8 @@ public class ESMPanel extends JPanel {
 
 			@Override
 			public void mouseEntered( MouseEvent e ) {
+				panelFocux= true;
 				display.println( this.getClass().toString(), PS.type + " " + PS.name + " is focused" );
-				//panel.requestFocus(); // request focus to the window upon mouse enter.
 				PS.lastMouseInputTime= helper.getTimeLong();
 				PS.MouseLastPositionX= e.getX();
 				PS.MouseLastPositionY= e.getY();
@@ -237,6 +244,12 @@ public class ESMPanel extends JPanel {
 						break;
 				}
 			}
+			
+			@Override
+			public void mouseExited( MouseEvent e ) {
+				panelFocux= false;
+				clearHoveAllHighlight();
+			}
 		} );
 		//
 		// ********************* mouse motion *********************
@@ -253,8 +266,8 @@ public class ESMPanel extends JPanel {
 			@Override
 			public void mouseDragged( MouseEvent e ) {
 				// request focus to the window upon mouse enter. && bring to top.
-				panel.requestFocus();
 				bring2Top();
+				panel.requestFocus();
 				//
 				PS.lastMouseInputTime= helper.getTimeLong();
 				PS.MouseLastPositionX= e.getX();
@@ -297,7 +310,7 @@ public class ESMPanel extends JPanel {
 			public void focusGained( FocusEvent arg0 ) {}
 
 			@Override
-			public void focusLost( FocusEvent e ) {}
+			public void focusLost( FocusEvent e ) {		}
 		} );
 		//
 		// ********************* arrow key bind *********************
@@ -619,6 +632,33 @@ public class ESMPanel extends JPanel {
 	/*||----------------------------------------------------------------------------------------------
 	 ||| GUI related.
 	||||--------------------------------------------------------------------------------------------*/
+	protected synchronized void clearHoveAllHighlight() {
+		// clear for all HoverHighlight.
+		ArrayList <pinnable> pins= (ArrayList <pinnable>)PS.getGUIactive().clone();
+		ArrayList <pinnable> pinsLF= (ArrayList <pinnable>)PS.getGUIactiveLF().clone();
+		for( pinnable pin : pins ) 
+			if( pin instanceof AbleHoverHighlight ) { 		
+				( (AbleHoverHighlight)pin ).HoverHighlightOff();
+				
+				
+			}
+		for( pinnable pin : pinsLF )			
+			if( pin instanceof AbleHoverHighlight )
+				( (AbleHoverHighlight)pin ).HoverHighlightOff();
+	}
+	
+	protected synchronized void clearClickAllHighlight() {
+		// clear for all ClickHighlight.
+		ArrayList <pinnable> pins= (ArrayList <pinnable>)PS.getGUIactive().clone();
+		ArrayList <pinnable> pinsLF= (ArrayList <pinnable>)PS.getGUIactiveLF().clone();
+		for( pinnable pin : pins ) 
+			if( pin instanceof AbleClickHighlight ) 		
+				( (AbleClickHighlight)pin ).B1clickHighlightOff( 0, 0 );
+		for( pinnable pin : pinsLF )			
+			if( pin instanceof AbleClickHighlight )
+				( (AbleClickHighlight)pin ).B1clickHighlightOff( 0, 0 );
+	}
+	
 	protected synchronized void checkB2Press( MouseWheelEvent e ) {
 		int x, y;
 		x= PS.b2wX( e.getX() );
@@ -654,15 +694,7 @@ public class ESMPanel extends JPanel {
 			}
 		}
 		if( clearAll ){
-			// unhighlight all others.
-			ArrayList <pinnable> pins= (ArrayList <pinnable>)PS.getGUIactive().clone();
-			ArrayList <pinnable> pinsLF= (ArrayList <pinnable>)PS.getGUIactiveLF().clone();
-			for( pinnable pin : pins )
-				if( pin instanceof AbleClickHighlight )
-					( (AbleClickHighlight)pin ).B1clickHighlightOff( 0, 0 );
-			for( pinnable pin : pinsLF )
-				if( pin instanceof AbleClickHighlight )
-					( (AbleClickHighlight)pin ).B1clickHighlightOff( 0, 0 );
+			clearClickAllHighlight();
 		}else CheckB1PressNGE( e );
 	}
 
@@ -739,7 +771,7 @@ public class ESMPanel extends JPanel {
 		if( checkClick && checkHighL ){
 			CheckB1ClickNGE( e );
 		}
-		//f.f( "ML hl: " + highlighted );
+		//f.f( "ML hl: " + highlighted + "   " + ID);
 	}
 
 	protected synchronized void CheckB1ClickNGE( MouseEvent e ) {}
@@ -827,6 +859,9 @@ public class ESMPanel extends JPanel {
 	}
 
 	protected synchronized void HoverHighlight() {
+		if( !panelFocux )
+			return;
+		//
 		int xx, yy;
 		xx= PS.b2wX( PS.MouseLastPositionX );
 		yy= PS.b2wY( PS.MouseLastPositionY );
@@ -866,17 +901,16 @@ public class ESMPanel extends JPanel {
 	protected void windowTitleInput( int x, int y ) {
 		if( titlePin != null && titlePin instanceof AblePanelTitle ){
 			if( ( (AblePanelTitle)titlePin ).isCloseClicked( x, y ) ){
-				closePanel();
+				windowClosebyTitleInput();
 			}
 		}
 	}
 
+	protected void windowClosebyTitleInput() {
+		closePanel();
+	}
+
 	protected synchronized void KeyboardInp( String lk ) {
-		/*
-		f.f( "--KE hl: " + highlighted );
-		//
-		still have highlight turnned off problem..
-		*/
 		if( highlighted != null ){
 			// always check esc first.
 			//if( lk.length() == 1 && (int)lk.charAt( 0 ) == 27 ){

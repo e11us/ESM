@@ -13,6 +13,7 @@ public class ExcPython {
 	public String	msg		= null;
 	public boolean	ended	= false;
 	public boolean	error	= false;
+	private Process	p		= null;
 
 	public ExcPython( String file, String name ) {
 		if( file == null || name == null )
@@ -21,6 +22,11 @@ public class ExcPython {
 		sla mini= new sla();
 		Thread t= new Thread( mini, "ExcPython-" + name );
 		t.start();
+	}
+
+	public void closeNow() {
+		if( p != null )
+			p.destroy();
 	}
 
 	private class sla implements Runnable {
@@ -40,7 +46,6 @@ public class ExcPython {
 			arg.add( file );
 			arg.add( "" + number1 );
 			arg.add( "" + number2 );
-			Process p= null;
 			try{
 				p= ProcessFactory.getProcess( arg );
 				//System.out.print( "ExcPython running..." );

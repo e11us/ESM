@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import ellus.ESM.Machine.display;
-import ellus.ESM.Machine.f;
 import ellus.ESM.Machine.helper;
 import ellus.ESM.setting.SMan;
 
@@ -59,7 +58,7 @@ public class mySQLportal {
 			for( int i= 0; i < name.size(); i++ ){
 				// check if colume exists, or if this is id.
 				if( !cols.contains( name.get( i ) ) || name.get( i ).equals( id1 ) || name.get( i ).equals( id2 )
-						|| val.get( i ).length() == 0 || helper.AllEmptySpace( val.get( i ) ) )
+						|| val.get( i ) == null || val.get( i ).length() == 0 || helper.AllEmptySpace( val.get( i ) ) )
 					continue;
 				//
 				if( last ){
@@ -77,6 +76,52 @@ public class mySQLportal {
 			newAC.substring( 0, newAC.length() - 1 );
 			newVa.substring( 0, newVa.length() - 1 );
 			ExecUpdate( newAC + newVa + " );" );
+			//
+		}catch ( Exception e ){
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	public static boolean update( String idA, String idB, ArrayList <String> name, ArrayList <String> val ) {
+		if( idA == null || idB == null || name == null || val == null || name.size() != val.size() || name.size() == 0 )
+			return false;
+		//
+		if( cols == null )
+			connect();
+		//
+		try{
+			String query= "UPDATE " + tableName + " SET ";
+			for( int i= 0; i < name.size(); i++ ){
+				// check if colume exists, or if this is id.
+				if( !cols.contains( name.get( i ) ) || name.get( i ).equals( id1 ) || name.get( i ).equals( id2 )
+						|| val.get( i ) == null || val.get( i ).length() == 0 || helper.AllEmptySpace( val.get( i ) ) )
+					continue;
+				query+= " " + name.get( i ) + " = '" + val.get( i ) + "',";
+			}
+			query= query.substring( 0, query.length() - 1 );
+			query+= " WHERE " + id1 + " = " + idA + " AND " + id2 + " = " + idB + " ; ";
+			ExecUpdate( query );
+			//
+		}catch ( Exception e ){
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	public static boolean delete( String idA, String idB ) {
+		if( idA == null || idB == null )
+			return false;
+		//
+		if( cols == null )
+			connect();
+		//
+		try{
+			String query= "DELETE FROM " + tableName + " WHERE " +
+					id1 + " = " + idA + " AND " + id2 + " = " + idB + " ; ";
+			ExecUpdate( query );
 			//
 		}catch ( Exception e ){
 			e.printStackTrace();
@@ -110,9 +155,16 @@ public class mySQLportal {
 			//
 			ArrayList <sqlResult> ret= new ArrayList <>();
 			sqlResult rs;
+			//
 			while( res.next() ){
 				rs= new sqlResult();
-				for( int i= 0; i < rsmd.getColumnCount(); i++ ){
+				rs.colName.add( rsmd.getColumnName( 1 ) );
+				rs.type.add( rsmd.getColumnTypeName( 1 ) );
+				rs.val.add( res.getInt( 1 ) + "" );
+				rs.colName.add( rsmd.getColumnName( 2 ) );
+				rs.type.add( rsmd.getColumnTypeName( 2 ) );
+				rs.val.add( res.getBigDecimal( 2 ).toString() );
+				for( int i= 2; i < rsmd.getColumnCount(); i++ ){
 					rs.colName.add( rsmd.getColumnName( i + 1 ) );
 					rs.type.add( rsmd.getColumnTypeName( i + 1 ) );
 					rs.val.add( res.getObject( i + 1 ) );

@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
 import ellus.ESM.Machine.display;
+import ellus.ESM.Machine.f;
 import ellus.ESM.Machine.helper;
 
 
@@ -253,6 +254,17 @@ public class SMan {
 		//
 		// call const setting to see others. --------------------- very important, must be done, after init the SM.
 		SCon.SLCVE();
+		//
+		// if not level testing.
+		if( !SCon._levelTestingGen ){
+			conStr.get( 0 ).cont= "./ESM";
+			if( !new File( "./ESM" ).exists() ){
+				System.out.println( "ESM folder does not exists, exiting..." );
+				helper.writeFile( "./error-" + helper.getCurrentDate() +
+						helper.rand32AN().substring( 0, 5 ) + ".txt", true, "ESM folder does not exists, exiting..." );
+				System.exit( 1111 );
+			}
+		}
 	}
 
 	/*||----------------------------------------------------------------------------------------------

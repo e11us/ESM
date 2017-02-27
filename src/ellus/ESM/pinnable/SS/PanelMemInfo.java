@@ -12,7 +12,6 @@ import ellus.ESM.pinnable.pinSS;
 import ellus.ESM.pinnable.Able.AbleHoverHighlight;
 import ellus.ESM.pinnable.Able.AbleSMXConfig;
 import ellus.ESM.roboSys.MemInfo;
-import ellus.ESM.roboSys.cpuInfo;
 import ellus.ESM.setting.SCon;
 import ellus.ESM.setting.SManXAttr.AttrType;
 import ellus.ESM.setting.SManXElm;
@@ -100,6 +99,7 @@ public class PanelMemInfo extends pinSS implements AbleHoverHighlight, AbleSMXCo
 			this.start();
 		}
 
+		@Override
 		public void run() {
 			useRate= MemInfo.getUsed() / 100.0;
 		}

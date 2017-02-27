@@ -1,10 +1,6 @@
 package ellus.ESM.Machine;
 
-import java.util.ArrayList;
-import ellus.ESM.ESMP.PasswordManager;
 import ellus.ESM.ESMW.ESMW_Home;
-import ellus.ESM.data.SQL.mySQLportal;
-import ellus.ESM.setting.SCon;
 import ellus.ESM.setting.SMan;
 
 
@@ -17,6 +13,7 @@ public class mainDriver {
 		try{
 			//----------------------- ESM ----------------------------
 			//
+			//PlayerAudio pa= new PlayerAudio( "C:/_C#const/Boeing 777, Night Flight Cabin Sound.mp3" );
 			boolean run= true;
 			if( run ){
 				//

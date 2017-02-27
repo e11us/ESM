@@ -5,6 +5,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.util.ArrayList;
 import javax.swing.JPanel;
+import ellus.ESM.Machine.f;
 import ellus.ESM.Machine.helper;
 import ellus.ESM.pinnable.pinnable;
 import ellus.ESM.pinnable.Able.AbleMouseDrag;
@@ -169,6 +170,8 @@ public class ESMPS {
 			PanelH= (int) ( screenSize.height / 2.0 );
 			config.getAttr( AttrType._int, "PanelWidth" ).setVal( PanelW + "" );
 			config.getAttr( AttrType._int, "PanelHeight" ).setVal( PanelH + "" );
+			PanelX= 50;
+			PanelY= 50;
 		}
 		//
 		ViewCenterX= config.getAttr( AttrType._int, "InitialViewCenterX" ).getInteger();

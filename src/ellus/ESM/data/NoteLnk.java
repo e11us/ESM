@@ -12,7 +12,7 @@ import ellus.ESM.pinnable.Able.AbleLocalLink;
 public class NoteLnk {
 	private String					path;
 	private ArrayList <pinnable>	pL;
-	private Object[]				inp;																																																																						 // id, l1 id, l2 id, xmin, xmax, ymin, ymax, p1, p2
+	private Object[]				inp;																																																																												 // id, l1 id, l2 id, xmin, xmax, ymin, ymax, p1, p2
 	private pinnable				pp1, pp2;
 
 	public NoteLnk( String path, ArrayList <pinnable> pins, Object[] inp ) {

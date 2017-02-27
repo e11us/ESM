@@ -5,6 +5,12 @@ import java.util.Collections;
 
 
 
+/*
+ *
+ * add with same compare value?
+ *
+ *
+ */
 public class BArray <E extends Comparable> {
 	private ArrayList <E> list= null;
 

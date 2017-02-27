@@ -22,4 +22,14 @@ public class pin2ScreenLocationer {
 				PS.getHeight() - 10 );
 		return pin;
 	}
+	
+	public static pinnable centerThisXY( pinnable pin, ESMPS PS ) {
+		if( pin == null || PS == null )
+			return null;
+		pin.setXY( PS.getWidth() / 2 - pin.getWidth() / 2,
+				PS.getWidth() / 2 + pin.getWidth() / 2,
+				PS.getHeight() / 2 - pin.getHeight() / 2,
+				PS.getHeight() / 2 + pin.getHeight() / 2 );
+		return pin;
+	}
 }

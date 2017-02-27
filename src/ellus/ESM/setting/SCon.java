@@ -73,6 +73,7 @@ public class SCon {
 	// others.
 	public static ArrayList <Font>			FontList						= new ArrayList <>();
 	public static ArrayList <String>		ImageExtList					= new ArrayList <>();
+	public static ArrayList <String>		AudioExtList					= new ArrayList <>();
 	public static ArrayList <PlayerAudio>	systemSound						= new ArrayList <>();
 	public static PlayerAudio				showBoardSound					= null;
 	//
@@ -160,6 +161,14 @@ public class SCon {
 				Scanner rdr= new Scanner( imgExtAll );
 				while( rdr.hasNext() ){
 					ImageExtList.add( rdr.next() );
+				}
+			}
+			// get all the supported sound et.
+			String AudioExtAll= SMan.getSetting( 1111 );
+			if( AudioExtAll != null ){
+				Scanner rdr= new Scanner( AudioExtAll );
+				while( rdr.hasNext() ){
+					AudioExtList.add( rdr.next() );
 				}
 			}
 			//

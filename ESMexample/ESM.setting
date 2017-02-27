@@ -7,7 +7,7 @@
 //
 /// 0-500 are path setting for ESM ============================================================
 //
-0 String ./ESM                                         // path for master folder.
+0 String ./ESM                                                         // path for master folder.
 //
 1 String /pinned                                                       // path for pinned folder in the master folder.
 2 String /sys                                                          // system folder.
@@ -22,7 +22,7 @@
 11 String /Calendar                                                    // calendar event and rule folder.
 12 String /BookRead                                                    // book reading folder. contian all books.
 13 String /WebPicDLMain                                                // web pic scraping dl folder.
-14 String /pinned/pinned HomeLink                                         // the home board pinned link.
+14 String /pinned/pinned HomeLink                                      // the home board pinned link.
 //
 101 String /sys/font                                                   // fonts.
 102 String /sys/cursor                                                 // cursor folder.
@@ -47,8 +47,10 @@
 //
 401 String /pinned/.setting                                            // the default setting for all the note wall.
 //
-//411 String D:/pixiv/PT                                   // pixiv downloaded image.
+//411 String D:/pixiv/PT                               			       // pixiv downloaded image.
 411 String D:/pixiv/pixivutil/___DLs                                   // pixiv downloaded image.
+420 String D:/_ESM/Music                                               // audioplayer main folder.
+421 String D:/_ESM/Music                                               // audioplayer last play path.
 //
 500 String C:/Users/ellus/Desktop                                      // folderdeskTop
 501 String D:/#ACV/-- Activation --                                    // activation folder, for desk top.
@@ -67,11 +69,11 @@
 //
 // settings and more patterns.============================================================
 //
-1110 BMP bmp jpeg wbmp gif png JPG jpg WBMP                            // supported image extension.
-1111 String 1 5 8 6 10 11                                              // back up folder index.
+1110 String BMP bmp jpeg wbmp gif png JPG jpg WBMP                     // supported image extension.
+1111 String aac mp3 pcm avc wav flv mp4                                // supported audio extension.
 //
-2010 String user										 	// SQL user
-2011 String pw 												// SQL user pw.
-2012 String jdbc:mysql://localhost:3306/mydb 				// SQL db path. 
-2020 String 32charkey 										// PWM key.
-2110 String /fitc-tokyo  // images for home bg layer.
+2010 String user                                                       // SQL user
+2011 String pw                                                         // SQL user pw.
+2012 String jdbc:mysql://localhost:3306/mydb                           // SQL db path.
+2020 String 32charkey                                                  // PWM key.
+2110 String /fitc-tokyo                                                // images for home bg layer.
